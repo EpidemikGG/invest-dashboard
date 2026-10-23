@@ -288,7 +288,7 @@ function validatePreview(data) {
 function previewCards() {
   if (state.errors.preview) return errorBox(state.errors.preview);
   if (!state.preview) return empty('No research or design examples are available.');
-  return `<p class="design-note">${icon('info')}<span>${text(state.preview.notice)}</span></p><div class="stock-list">${state.preview.stocks.map(p => `<article class="stock-card" data-design-example="true">${stockCardHeader(p.ticker,p.name,p.sentiment,p.score,p.category,money(p.price),true)}<div class="stock-notes">${p.notes.map((n,i) => `<div>${icon(['chat','waterfall_chart','verified'][i] || 'description',p.sentiment === 'Weak' ? 'signal-risk' : 'signal-positive')}<p><strong>${text(n.label.replace('Verified Sources','Sources'))}:</strong> ${text(n.text)}</p></div>`).join('')}</div>${cardAction(p.ticker)}</article>`).join('')}</div>`;
+  return `<div class="stock-list">${state.preview.stocks.map(p => `<article class="stock-card" data-design-example="true">${stockCardHeader(p.ticker,p.name,p.sentiment,p.score,p.category,money(p.price),true)}<div class="stock-notes">${p.notes.map((n,i) => `<div>${icon(['chat','waterfall_chart','verified'][i] || 'description',p.sentiment === 'Weak' ? 'signal-risk' : 'signal-positive')}<p><strong>${text(n.label.replace('Verified Sources','Sources'))}:</strong> ${text(n.text)}</p></div>`).join('')}</div>${cardAction(p.ticker)}</article>`).join('')}</div>`;
 }
 function researchPanel(entry, month) {
   const selected = ['stocks', 'context', 'prompt'].includes(state.researchTab) ? state.researchTab : 'stocks';
@@ -374,10 +374,11 @@ function monthPage() {
   const issue = state.entries.find(e => e.data?.month === month || e.error && e.path === `entries/${month}.json`);
   const entry = issue?.data;
   const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : entry ? researchPanel(entry,month) : previewCards();
+  const previewNote = !entry && !issue?.error && !state.errors.index && state.preview ? `<p class="design-note">${icon('info')}<span>${text(state.preview.notice)}</span></p>` : '';
   const holdings = monthPurchases(state.holdings || [],month);
   const core = holdings.filter(h => h.bucket === 'core').reduce((s,h) => s+h.amount_usd,0);
   const satellite = holdings.filter(h => h.bucket === 'satellite').reduce((s,h) => s+h.amount_usd,0);
-  return `<section id="view-this-month"><div class="page-intro"><h1 id="page-title">Top Investment Picks for This Month</h1><p>Stock research combining community sentiment, institutional activity, and source filings.</p></div><div class="month-layout"><div class="month-main">${research}<details class="monthly-details"><summary>Research / ${esc(month)} · allocation & purchases</summary><div class="detail-body">${state.errors.holdings ? errorBox(state.errors.holdings) : panel('This month’s allocation',allocationBar(core,satellite,'Purchases this month · core / satellite')) + purchaseLedger(holdings,'This month’s purchases')}</div></details></div><aside class="investment-sidebar">${purchaseForm()}</aside></div></section>`;
+  return `<section id="view-this-month"><div class="page-intro"><h1 id="page-title">Top Investment Picks for This Month</h1><p>Stock research combining community sentiment, institutional activity, and source filings.</p></div>${previewNote}<div class="month-layout"><div class="month-main">${research}<details class="monthly-details"><summary>Research / ${esc(month)} · allocation & purchases</summary><div class="detail-body">${state.errors.holdings ? errorBox(state.errors.holdings) : panel('This month’s allocation',allocationBar(core,satellite,'Purchases this month · core / satellite')) + purchaseLedger(holdings,'This month’s purchases')}</div></details></div><aside class="investment-sidebar">${purchaseForm()}</aside></div></section>`;
 }
 function activePositionsTable(holdings, prices) {
   const positions = positionHistory(holdings, prices);
@@ -650,7 +651,6 @@ async function start() {
   }
   render();
   window.addEventListener('hashchange', render);
-  matchMedia('(prefers-color-scheme: light)').addEventListener('change', render);
 }
 if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTML = errorBox(e); });
 // Enables deterministic arithmetic/validation tests without adding browser dependencies.
