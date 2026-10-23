@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "id": "purchase-2382daf1-0796-4dce-bb23-9edd59c8654a",
+    "date": "2026-10-22",
+    "ticker": "VWCE",
+    "isin": "",
+    "bucket": "core",
+    "amount_usd": 104.07,
+    "price": 189.2181818181818,
+    "shares": 0.55,
+    "price_basis": "average_cost_per_reported_share",
+    "execution_price_usd": null,
+    "fees_usd": null,
+    "note": "Original USD amount and 22 October 2026 purchase date confirmed by user. Shares are the quantities the user requested from the screenshot. Price is original outlay divided by reported shares; execution price and fees were not supplied."
+  },
+  {
+    "id": "purchase-9e88c703-b155-41b5-8526-b26220eae7f1",
+    "date": "2026-10-22",
+    "ticker": "MSFT",
+    "isin": "",
+    "bucket": "core",
+    "amount_usd": 70,
+    "price": 538.4615384615385,
+    "shares": 0.13,
+    "price_basis": "average_cost_per_reported_share",
+    "execution_price_usd": null,
+    "fees_usd": null,
+    "note": "Original USD amount and 22 October 2026 purchase date confirmed by user. Shares are the quantities the user requested from the screenshot. Price is original outlay divided by reported shares; execution price and fees were not supplied."
+  },
+  {
+    "id": "purchase-ca5eafa4-bd91-43fe-9b97-411bf7e26f19",
+    "date": "2026-10-22",
+    "ticker": "BRK.B",
+    "isin": "",
+    "bucket": "core",
+    "amount_usd": 68.94,
+    "price": 574.5,
+    "shares": 0.12,
+    "price_basis": "average_cost_per_reported_share",
+    "execution_price_usd": null,
+    "fees_usd": null,
+    "note": "Original USD amount and 22 October 2026 purchase date confirmed by user. Shares are the quantities the user requested from the screenshot. Price is original outlay divided by reported shares; execution price and fees were not supplied."
+  },
+  {
+    "id": "purchase-e5eb4feb-102b-42a7-bce0-16c3178db379",
+    "date": "2026-10-22",
+    "ticker": "GOOGL",
+    "isin": "",
+    "bucket": "core",
+    "amount_usd": 58.94,
+    "price": 327.44444444444446,
+    "shares": 0.18,
+    "price_basis": "average_cost_per_reported_share",
+    "execution_price_usd": null,
+    "fees_usd": null,
+    "note": "Original USD amount and 22 October 2026 purchase date confirmed by user. Shares are the quantities the user requested from the screenshot. Price is original outlay divided by reported shares; execution price and fees were not supplied."
+  }
+]
