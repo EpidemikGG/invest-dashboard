@@ -98,7 +98,13 @@ function validatePrices(p) {
 function validateHoldings(h) {
   assertValid(h, [{ date, ticker: nonempty, isin: str, bucket: oneOf('core', 'satellite'), amount_usd: positive, price: positive, shares: positive }], FILES.holdings);
   const buckets = new Map();
+  const ids = new Set();
   h.forEach(r => {
+    if ('id' in r) {
+      if (!nonempty(r.id)) throw new Error(`${FILES.holdings}: purchase id must be a non-empty string.`);
+      if (ids.has(r.id)) throw new Error(`${FILES.holdings}: duplicate purchase id.`);
+      ids.add(r.id);
+    }
     if (buckets.has(r.ticker) && buckets.get(r.ticker) !== `${r.bucket}:${r.isin}`) throw new Error(`${FILES.holdings}: ${r.ticker} has inconsistent bucket or ISIN.`);
     buckets.set(r.ticker, `${r.bucket}:${r.isin}`);
     if (r.shares * r.price > r.amount_usd + Math.max(.02, r.amount_usd * .001)) throw new Error(`${FILES.holdings}: ${r.ticker} purchase cost is below shares × USD price.`);
@@ -448,10 +454,12 @@ function purchaseFromFields(fields, existing) {
   if (purchase.date > today) throw new Error('The purchase date cannot be in the future.');
   return purchase;
 }
+const CHATGPT_PURCHASE_INSTRUCTIONS = 'Read AGENTS.md in https://github.com/EpidemikGG/invest-dashboard using my connected GitHub account. Record the completed purchase I provide in data/holdings.json. Ask together for essential missing details. Preserve current purchases, check duplicates, validate the full ledger, commit with the current file SHA, and verify the saved purchase. Give me the commit and live dashboard links. If you cannot write to GitHub, tell me it has not been saved.\n\nMy completed purchase: ';
 function purchaseForm() {
   const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const unavailable = !!state.errors.holdings || !!state.localError;
   return `<section class="panel purchase-panel" aria-labelledby="purchase-heading"><div class="section-head"><div><h2 id="purchase-heading">Add an investment</h2><p>Log an actual purchase to update your portfolio.</p></div>${tag('SAVED ON THIS DEVICE')}</div>
+    <details class="chatgpt-purchase"><summary>Add with ChatGPT · sync across devices</summary><div class="detail-body"><p>Tell ChatGPT what you bought and ask it to record the purchase using your GitHub connection. Include the ticker, date, amount, fill price or shares, fees and bucket. It will ask for missing details.</p><p class="local-note">Purchases recorded through GitHub are saved to this dashboard for all your devices. The ledger is public. The manual form below saves only in this browser.</p><label for="chatgpt-purchase-instructions">Instructions to paste into ChatGPT</label><textarea id="chatgpt-purchase-instructions" rows="5" readonly>${esc(CHATGPT_PURCHASE_INSTRUCTIONS)}</textarea><button type="button" class="action-button" id="copy-chatgpt-purchase">Copy ChatGPT instructions</button><p class="form-message" id="chatgpt-copy-message" role="status" aria-live="polite"></p></div></details>
     <form id="purchase-form" class="purchase-form">
       <label class="amount-field">Investment amount (USD)<input name="amount" type="number" min="0.000001" step="any" inputmode="decimal" required placeholder="300.00"><small>Total paid, including fees.</small></label>
       <label>Ticker<input name="ticker" type="text" maxlength="30" required placeholder="e.g. MSFT" autocapitalize="characters" autocomplete="off"></label>
@@ -472,6 +480,10 @@ function purchaseForm() {
 function bindPurchases() {
   const form = $('#purchase-form');
   if (!form) return;
+  $('#copy-chatgpt-purchase').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(CHATGPT_PURCHASE_INSTRUCTIONS); $('#chatgpt-copy-message').textContent = 'Copied. Paste into ChatGPT with GitHub connected and add your purchase details.'; }
+    catch { $('#chatgpt-copy-message').textContent = 'Select and copy the instructions above, then add your purchase details in ChatGPT.'; $('#chatgpt-purchase-instructions').focus(); $('#chatgpt-purchase-instructions').select(); }
+  });
   const report = error => {
     $('#purchase-message').dataset.error = 'true';
     $('#purchase-message').textContent = error.message;

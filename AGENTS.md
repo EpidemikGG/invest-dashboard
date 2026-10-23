@@ -1,0 +1,32 @@
+# Investing dashboard agent instructions
+
+Repository: EpidemikGG/invest-dashboard
+Live site: https://epidemikgg.github.io/invest-dashboard/
+
+This is a static GitHub Pages dashboard. User-reported completed purchases can be recorded through the user's connected GitHub tools. The website does not execute trades, call an AI API, or grant GitHub access. These instructions apply when a user asks an assistant to record a purchase in this dashboard. Always follow the active tool approval rules.
+
+## Record an investment reported in chat
+
+1. Read this file, data/config.json, schema/holding.schema.json, and the CURRENT data/holdings.json from the default branch using the GitHub connection. Preserve the current file/blob SHA for the write. Read the latest relevant monthly entry if it helps identify the bucket or instrument. Do not use stale cached holdings or replace the file with only the new purchase.
+2. Record only an actual completed purchase the user reports. A recommendation, planned allocation, watchlist, hypothetical example or unexecuted order is not a purchase. If their wording is ambiguous, clarify whether it was executed. Recording a completed purchase is not permission to place a broker order.
+3. Extract ticker, real purchase date, amount paid in USD, USD execution price, shares and bucket. Normalize the ticker to uppercase. Resolve "today" and "yesterday" in Europe/Bucharest. If the date is absent, ask for it rather than silently choosing today. The amount is the actual total outlay, including fees when supplied. Do not replace an execution price with a current web quote or infer actual fills from the monthly research price.
+4. Ask one concise bundled question for any essential missing or ambiguous values. Two of amount, execution price and shares determine the third only when fees are explicitly zero or known; if fees are unknown and deriving shares would be ambiguous, ask for actual shares or fees. For shares+price+known fees, amount = shares*price + fees. For amount+shares+known fees, price = (amount-fees)/shares. For amount+price+known fees, shares = (amount-fees)/price. Preserve precision and the broker's actual quantities. All numerical values must be finite and positive. Reject future or invalid purchase dates. Amount must not be less than shares*price, allowing the small rounding tolerance used in app.js.
+5. For non-USD fills, ask for the actual USD-equivalent outlay and execution price or a user-approved execution-time FX conversion. Never use today's FX rate to silently convert a past fill. Existing holdings for a ticker must retain their current bucket and ISIN. Reuse a known ISIN; if unavailable, use the empty string. Infer the bucket only from an existing holding or an unambiguous saved plan accepted by the user; otherwise ask core or satellite. If a supplied ISIN or bucket contradicts an existing holding, resolve it before editing old data.
+6. Check for duplicates using the existing row id, if one is supplied, and the tuple date/ticker/isin/bucket/amount_usd/price/shares. If a matching purchase already exists, report that it is recorded and do not add it again. If the user explicitly says it is a separate identical fill, preserve both with different ids. When uncertain whether it is a duplicate, ask. A new purchase gets a random stable id such as purchase-<UUID>. Do not publish private broker order identifiers as ids.
+7. Append the new object(s) to the existing holdings array. Required fields: date, ticker, isin, bucket, amount_usd, price, shares. Optional id is recommended for purchases recorded by an assistant. Validate the complete result against schema/holding.schema.json AND the consistency checks in app.js (validateHoldings). Never silently edit other purchases, settings, research or prices. Never claim a purchase was saved just because JSON was generated.
+8. Use GitHub's update_file action for data/holdings.json with its current blob SHA, on the default branch. Commit message: Record purchase YYYY-MM-DD TICKER. If recording several fills, use one commit. If the SHA guard conflicts, re-read current holdings, re-check duplicates, append to the new current array and retry without overwriting anyone else's changes. Do not force-push. Preserve all existing optional fields on old rows.
+9. Fetch the resulting holdings file and verify the exact new id/fields and that all previous rows remain. Check the Pages deployment when available. Report the saved ticker, date, amount, execution price, shares, bucket, commit link and dashboard link. Say whether deployment has completed or is still pending; only claim live visibility after checking it.
+
+## Persistence and privacy
+
+GitHub-recorded purchases are shared by all devices viewing the site; the user may need to reload after deployment. The manual website form saves in that browser only. An identical local purchase and published row are merged once per matching occurrence. If the user already entered a purchase locally, prefer their exported holdings.json to preserve exact quantities; do not append an approximate second version. The assistant cannot read a different browser's local purchases without the user providing them.
+
+This repository and its Pages data are public by the user's existing publishing choice. Recording here publishes the reported purchase amounts and quantities. Keep secrets, account numbers, broker order identifiers, credentials and unrelated personal information out of commits. Store only the purchase data the user asked to record. Follow applicable confirmation requirements for any new disclosure.
+
+If GitHub is disconnected or write access fails, explain that the purchase is NOT saved. Provide the complete merged JSON only when current holdings are known, or ask the user to connect GitHub. Do not request tokens, passwords or API keys in chat or add them to the site.
+
+## Research and implementation
+
+Read MONTHLY_PROMPT.md for research runs. Research recommendations and sentiment scores never create holdings. Actual purchase reports never become stock recommendations automatically. Missing market histories must remain missing; logging a fill is not evidence of a market closing price.
+
+Keep the website plain HTML/CSS/JavaScript with no backend or build step. All fetched JSON stays under data/. Main navigation remains This month and Portfolio. Add an investment belongs only at the bottom of This month. Portfolio is a read-only history/performance view.

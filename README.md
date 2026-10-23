@@ -119,3 +119,13 @@ Stock cards show ticker, share price, score, sentiment, confidence, risk, sugges
 Portfolio shows all purchases, account totals, each position’s gain/loss, a multi-stock return chart and a selected stock’s closing-price chart with actual fills marked. Individual position values use each ticker’s latest quote on or after its last purchase; account totals use a shared valuation date. Returns equal value divided by cumulative actual purchase outlay, minus one. They include repeat buys and fractional shares and are not annualized or time-weighted. Dates with no quote remain chart gaps. The exact-history table remains usable if Chart.js fails.
 
 Add real dated prices to data/prices.json to populate performance charts. Empty price files show an explanation and purchase history, never made-up market performance. Research sentiment does not affect performance calculations. Portfolio has no purchase or cash-edit forms; any cash value saved previously is preserved in the account total.
+
+## Let ChatGPT record a purchase
+
+With GitHub connected in ChatGPT, tell it what you actually bought and ask it to add that purchase to this dashboard. Use the copyable instructions in Add an investment → Add with ChatGPT, or CHATGPT_PURCHASE_PROMPT.md. The canonical agent workflow is AGENTS.md, and the purchase schema is schema/holding.schema.json.
+
+ChatGPT can append completed fills to data/holdings.json through the GitHub connection. It reads current holdings, resolves missing date/currency/price/share/fee/bucket details, checks duplicates, validates the full ledger and writes with the current file SHA. It then verifies the saved purchase and reports the commit. New agent-recorded lots should include a stable random id; duplicate ids are rejected by the dashboard. Existing purchases without ids remain valid.
+
+No API key or GitHub credential is stored on the site. The site itself does not run ChatGPT or write to GitHub. A connected assistant performs the requested write. If no working GitHub connection exists, the purchase is not saved merely because an assistant outputs JSON. No investment has been recorded as part of enabling this capability.
+
+GitHub-recorded purchases load on every device after deployment. The manual form still saves locally. Identical local/published lots are matched by their original fields and counted once per occurrence. Use an export when asking ChatGPT to sync locally entered fills so their exact values are retained. The public JSON ledger includes exact amounts and quantities.

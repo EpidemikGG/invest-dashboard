@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Actual investment purchases",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["date", "ticker", "isin", "bucket", "amount_usd", "price", "shares"],
+    "properties": {
+      "id": {"type": "string", "minLength": 1},
+      "date": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+      "ticker": {"type": "string", "minLength": 1},
+      "isin": {"type": "string"},
+      "bucket": {"enum": ["core", "satellite"]},
+      "amount_usd": {"type": "number", "exclusiveMinimum": 0},
+      "price": {"type": "number", "exclusiveMinimum": 0},
+      "shares": {"type": "number", "exclusiveMinimum": 0}
+    },
+    "additionalProperties": true
+  },
+  "$comment": "Also enforce validateHoldings in app.js: ids unique when present; one ISIN/bucket per ticker; total outlay at least shares times USD execution price within rounding tolerance. Agent workflow also rejects future purchase dates."
+}
