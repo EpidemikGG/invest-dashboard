@@ -1,2 +1,89 @@
-# invest-dashboard
-Personal monthly investing research dashboard and portfolio benchmark tracker.
+# Invest Dashboard
+
+A static, mobile-friendly investing research dashboard. Upload the contents of this folder to a GitHub repository. There is no installation, build step, backend, API key or automatic trading. Chart.js 4.4.8 is the only external script.
+
+## Files and setup
+
+- `index.html`, `styles.css`, `app.js`: interface and calculations.
+- `FRAMEWORK.md`: rules extracted verbatim from your supplied document.
+- `data/config.json`: settings extracted verbatim from your document. The config lives under data so every JSON request stays there.
+- `data/index.json`: entry paths, newest first. The first listed entry is This month, even if it is invalid; the app never silently substitutes an older issue.
+- `data/entries/example.json`: invented demonstration, not investment advice. Dates and enum values retain schema-valid forms; descriptive text starts with EXAMPLE. Remove its index line when your first real issue is ready.
+- `data/holdings.json`: actual purchases only, initially empty.
+- `data/prices.json`: dated USD price histories, initially empty.
+- `.nojekyll`: empty file; retain it at the repository root.
+
+The bracketed benchmark, investor and broker fields in your original config are preserved intentionally. Fill them before using real data. No benchmark choice or investment research is supplied by this website.
+
+## Publish with GitHub Pages
+
+1. Create a repository named `invest-dashboard` on GitHub.
+2. Upload this folder's CONTENTS, preserving `data/entries/`. Ensure `index.html` is at the repository root, not in an additional enclosing folder.
+3. Commit the files to `main`. If `.nojekyll` was omitted by your uploader, use Add file → Create new file to create an empty file with that exact name.
+4. Open Settings → Pages. Under Build and deployment select Deploy from a branch, then `main` and `/(root)`. Save.
+5. Wait for the Pages deployment to finish. Open the URL shown in Settings → Pages, normally `https://YOUR-USERNAME.github.io/invest-dashboard/`.
+6. Check all four navigation tabs. The example warning and incomplete-setup notice are expected.
+
+GitHub's instructions: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+
+## Add a monthly entry in GitHub's web editor
+
+1. Run your research workflow using `data/config.json`, `FRAMEWORK.md`, actual holdings, prices and recent entries. Ask for a complete JSON entry matching `entrySchema` in `app.js`. Your document's older prompt refers to root config and a separate schema file; use the paths in this README instead.
+2. Open the repository's Code tab. Select Add file → Create new file.
+3. Enter `data/entries/2026-11.json` (substitute the actual month). Paste the complete entry. JSON needs double quotes, no comments and no trailing commas.
+4. Select Commit changes. Use a message such as `Entry 2026-11`; commit to your publishing branch or merge a pull request into it.
+5. Open `data/index.json`, select the pencil/Edit button, and insert `"entries/2026-11.json",` as the first item in `entries`. Leave older entries in their original order. Ensure the final item has no trailing comma. Remove `entries/example.json` when desired.
+6. Commit this index change. Once deployment finishes, refresh This month and open the issue in Archive. If validation fails, the page names all missing or invalid fields. Edit the JSON and commit the correction.
+
+Only the new issue and its index line are needed to add a month. Updating real purchases and price snapshots is separate. Old entry files are never rewritten by the website. Archive displays their saved research, with monetary masking if enabled; the current target allocation is explicitly labeled separately.
+
+GitHub's file editor instructions: https://docs.github.com/en/repositories/working-with-files/managing-files/creating-new-files
+
+## Entry conventions
+
+Every property shown in the example is required, including all nested metrics and checks. Arrays may be empty. Unknown numeric metrics and the next earnings date use JSON `null`; never invent values. `no_buy_reason` may be an empty string when buying. A previous change percentage may be null when unknown.
+
+Dates use `YYYY-MM-DD`, month uses `YYYY-MM`, and generated_at uses an ISO date-time. Metrics for revenue growth, free-cash-flow margin and dividend yield are percentage points: enter `12.5` for 12.5%, not `0.125`. P/E, beta and debt/equity are plain ratios. Checks are booleans. Source URLs must use http or https.
+
+Entry names may contain letters, digits, hyphens or underscores and must be directly inside `data/entries/`. The index uses paths such as `entries/2026-11.json`, not `/data/entries/2026-11.json`. List newest first; month order is intentionally not guessed from filenames.
+
+## Log purchases and update prices
+
+`data/holdings.json` is an array of purchase lots. Each object requires date, ticker, isin, bucket (`core` or `satellite`), amount_usd, price and shares. The date is the real execution date. Price is the USD-equivalent execution price per share; amount_usd is total USD cash outlay, including fees if applicable. Shares are actual acquired shares, including fractions. Keep the same ticker, ISIN and bucket for repeated purchases of one position. Numbers must be positive.
+
+`data/prices.json` has an `asOf` date and a `prices` object keyed by ticker. Each ticker maps to an array of `{ "date": "2026-11-02", "close": 100 }` objects. This numeric example illustrates the shape only. Closes must be positive, dates unique per ticker, and no date later than asOf. With no data, retain `{ "asOf": null, "prices": {} }`.
+
+Include benchmark closes on EVERY purchase date and shared valuation dates for the benchmark and all holdings. All closes must be converted to USD consistently before publication; the app does not fetch FX rates. Historical dates with incomplete prices become chart gaps. At least one complete shared date on or after the latest purchase is needed for the scorecard. A missing benchmark purchase-date close blocks comparison rather than guessing. Snapshots older than seven days show a stale-data notice.
+
+## Calculation assumptions
+
+Portfolio value is the sum of actual shares multiplied by their close on a shared valuation date. Benchmark units for each purchase are amount_usd divided by the benchmark close on that purchase date; benchmark value is the sum of those units multiplied by its valuation-date close.
+
+Each return is `(value / contributed capital - 1) * 100`. The difference is portfolio return minus benchmark return in percentage points. This is cumulative return on outlay, not annualized, not time-weighted and not IRR. The same cash flows are compared, including repeated buys and fractional shares. Benchmark purchases assume zero fees; actual outlays may include fees.
+
+This schema models purchases only. It does not model sales, uninvested cash, dividends, taxes or corporate actions automatically. Maintain split-adjusted quantities and matching prices consistently; do not mix total-return adjusted benchmark prices with unadjusted holdings. For dividend-paying assets this is a price-return comparison unless distributions are handled consistently outside the tool. A sales ledger or complete total-return accounting would require a schema extension.
+
+Allocation uses current market value at the same comparison date. Position count and satellite limits are checked. Single-stock and sector compliance cannot be verified fully because holdings have no instrument/sector fields; issue check flags are researcher-supplied, not independent verification.
+
+## Percentage view and public data
+
+`public_amounts: false` hides monetary figures and share quantities in the rendered UI. Contributions show percentages of total purchase outlay; current values show percentages of that same base. Monthly allocations show percentages of the issue budget; issue budgets show percentages of the configured monthly budget. Performance charts use percentage returns. Research prices are omitted; currency amounts in narrative text and framework rules are masked. Bare unlabelled numbers in prose cannot reliably be recognized as amounts: label monetary figures with their currency in research text.
+
+This is DISPLAY PRIVACY ONLY. JSON and Markdown files remain downloadable from a public website, regardless of what the interface hides. A private repository does not by itself make a GitHub Pages website private. Do not publish actual financial data you want to keep confidential. Source files preserve the supplied framework and config exactly; masking happens only when rendering.
+
+## Troubleshooting and local preview
+
+Open the site through GitHub Pages or an HTTP server, not by double-clicking index.html: browsers commonly block local-file fetches. If Python is available, run `python -m http.server 8000` from this folder, then visit `http://localhost:8000/`. Python is only an optional preview tool, not a site dependency.
+
+If a file fails, check its exact capitalization, path and JSON syntax. A config error blocks rendering to avoid accidentally revealing amounts. An invalid issue does not hide other valid archive issues. Price errors leave the purchase ledger visible. If cdnjs is blocked, the chart has a readable fallback and the exact performance table remains usable.
+
+## Fetch path check
+
+- `./data/config.json` → included
+- `./data/index.json` → included
+- `./data/holdings.json` → included
+- `./data/prices.json` → included
+- `./data/entries/example.json` → included via index
+- `./FRAMEWORK.md` → included; fetched as text, not JSON
+
+All requests are relative to the site directory, so the GitHub Pages project subpath works. Future entry paths are resolved relative to `./data/`. No live price API is called.

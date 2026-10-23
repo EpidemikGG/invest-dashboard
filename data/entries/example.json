@@ -1,0 +1,122 @@
+{
+  "month": "2099-01",
+  "generated_at": "2099-01-05T12:00:00Z",
+  "model": "EXAMPLE synthetic research model",
+  "data_as_of": "2099-01-04",
+  "budget_usd": 300,
+  "allocation": {
+    "core_usd": 240,
+    "satellite_usd": 60
+  },
+  "market_context": "EXAMPLE fictional market conditions for interface testing. No figures describe real securities.",
+  "review_of_previous": [
+    {
+      "ticker": "EXAMPLE-OLD",
+      "change_pct": -4.25,
+      "thesis_status": "weakened",
+      "action": "watch",
+      "note": "EXAMPLE demand slowed in an invented business. Reassess after its next fictional report."
+    }
+  ],
+  "picks": [
+    {
+      "ticker": "EXAMPLE-CORE",
+      "isin": "EXAMPLE-ISIN-CORE",
+      "name": "EXAMPLE Fictional Broad Index Fund",
+      "exchange": "EXAMPLE Exchange",
+      "instrument": "etf",
+      "bucket": "core",
+      "risk": "moderate",
+      "amount_usd": 240,
+      "price_at_research": 80,
+      "price_date": "2099-01-04",
+      "currency": "EXAMPLE USD",
+      "thesis": "EXAMPLE broad diversification is the default core case.",
+      "bear_case": "EXAMPLE a broad market decline reduces the fund value.",
+      "catalysts": [
+        "EXAMPLE ongoing diversified exposure; no discrete catalyst."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": 1,
+        "dividend_yield": 1.5,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": true,
+        "fee_under_1pct": true,
+        "no_earnings_within_14d": true,
+        "position_cap_ok": true
+      },
+      "confidence": "medium",
+      "sources": [
+        {
+          "title": "EXAMPLE fictional source, reserved example domain",
+          "url": "https://example.com/EXAMPLE",
+          "accessed": "2099-01-04"
+        }
+      ]
+    },
+    {
+      "ticker": "EXAMPLE-SAT",
+      "isin": "EXAMPLE-ISIN-SAT",
+      "name": "EXAMPLE Fictional Growth Company",
+      "exchange": "EXAMPLE Exchange",
+      "instrument": "stock",
+      "bucket": "satellite",
+      "risk": "high",
+      "amount_usd": 60,
+      "price_at_research": 15,
+      "price_date": "2099-01-04",
+      "currency": "EXAMPLE USD",
+      "thesis": "EXAMPLE a fictional catalyst supports growth.",
+      "bear_case": "EXAMPLE the product launch fails and most of this allocation could be lost.",
+      "catalysts": [
+        "EXAMPLE fictional product launch in the next quarter."
+      ],
+      "metrics": {
+        "pe_forward": 32,
+        "revenue_growth_yoy": 28,
+        "fcf_margin": 8,
+        "debt_to_equity": 0.45,
+        "beta": 1.65,
+        "dividend_yield": 0,
+        "next_earnings_date": "2099-01-12"
+      },
+      "checks": {
+        "eu_retail_buyable": true,
+        "fee_under_1pct": true,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": true
+      },
+      "confidence": "low",
+      "sources": [
+        {
+          "title": "EXAMPLE fictional source, reserved example domain",
+          "url": "https://example.com/EXAMPLE",
+          "accessed": "2099-01-04"
+        }
+      ]
+    }
+  ],
+  "watchlist": [
+    {
+      "ticker": "EXAMPLE-WAIT",
+      "trigger": "EXAMPLE wait for two consecutive quarters of positive free cash flow."
+    }
+  ],
+  "rejected": [
+    {
+      "ticker": "EXAMPLE-NO",
+      "reason": "EXAMPLE rejected because the fictional business exceeds the debt threshold."
+    }
+  ],
+  "no_buy_reason": "EXAMPLE this is a demonstration only. Do not place orders for these invented instruments.",
+  "warnings": [
+    "EXAMPLE all prices, dates, metrics, tickers and identifiers are invented.",
+    "EXAMPLE the satellite earnings check intentionally fails to demonstrate a warning."
+  ]
+}

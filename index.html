@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Monthly investing research and purchase performance.">
+  <title>Invest / Control Room</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <aside class="sidebar">
+    <a class="brand" href="#month"><span class="brand-mark">i.</span> INVEST<span class="muted"> /</span></a>
+    <p class="eyebrow">PERSONAL CONTROL ROOM</p>
+    <nav aria-label="Main navigation">
+      <a href="#month"><span aria-hidden="true">◫</span> This month</a>
+      <a href="#portfolio"><span aria-hidden="true">▥</span> Portfolio</a>
+      <a href="#archive"><span aria-hidden="true">▤</span> Archive</a>
+      <a href="#framework"><span aria-hidden="true">◎</span> Framework</a>
+    </nav>
+    <div class="sidebar-note"><span class="dot"></span> Research → review → invest<br><small>One considered month at a time.</small></div>
+  </aside>
+  <div class="workspace">
+    <header><div><p class="eyebrow">INVESTING / DASHBOARD</p><h1 id="page-title">This month</h1></div><span class="badge">PERSONAL EDITION</span></header>
+    <div id="notices" aria-live="polite"></div>
+    <main id="content" tabindex="-1" aria-live="polite"><p class="panel">Loading your dashboard…</p></main>
+    <noscript><p class="error">Enable JavaScript to read the dashboard.</p></noscript>
+    <footer>AI-generated research. Not financial advice.</footer>
+  </div>
+</body>
+</html>
