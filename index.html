@@ -5,23 +5,29 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark light">
   <meta name="description" content="Monthly investing research and purchase performance.">
-  <title>Invest / Control Room</title>
-  <link rel="stylesheet" href="./styles.css?v=6">
+  <title>SYNTH.QUANT / This month</title>
+  <link rel="stylesheet" href="./styles.css?v=7">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
-  <script defer src="./app.js?v=6"></script>
+  <script defer src="./app.js?v=7"></script>
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
   <div class="workspace">
-    <nav class="top-nav" aria-label="Main navigation">
-      <a href="#month"><span aria-hidden="true">◫</span> This month</a>
-      <a href="#portfolio"><span aria-hidden="true">▥</span> Portfolio</a>
-    </nav>
-    <header><div><p class="eyebrow">INVESTING / DASHBOARD</p><h1 id="page-title">This month</h1></div><span class="badge">PERSONAL EDITION</span></header>
+    <div class="masthead">
+      <div class="brand" aria-label="Synth Quant investing dashboard">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m3 25 8-10 7 5 10-14M22 6h6v6" stroke="currentColor" stroke-width="2"/><path d="M6 5v6M3 8h6" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>SYNTH<em>.QUANT</em></span>
+      </div>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a href="#month"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 18 6-7 5 3 7-10M15 4h6v6" stroke="currentColor" stroke-width="1.7"/></svg>This month</a>
+        <a href="#portfolio"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v9h9M12 3a9 9 0 1 0 9 9M15 3.5V9h5.5" stroke="currentColor" stroke-width="1.7"/></svg>Portfolio</a>
+      </nav>
+    </div>
+    <header class="page-header"><div><p class="eyebrow">PERSONAL INVESTMENT INTELLIGENCE</p><h1 id="page-title">This month</h1><p id="page-description" class="page-description">Your monthly stock research, allocation plan and recorded investments.</p></div><span class="badge"><span class="dot" aria-hidden="true"></span>PERSONAL EDITION</span></header>
     <div id="notices" aria-live="polite"></div>
     <main id="content" tabindex="-1" aria-live="polite"><p class="panel">Loading your dashboard…</p></main>
     <noscript><p class="error">Enable JavaScript to read the dashboard.</p></noscript>
-    <footer>AI-generated research. Not financial advice.</footer>
+    <footer><span class="footer-brand">SYNTH.QUANT</span><span>AI-generated research. Not financial advice.</span></footer>
   </div>
 </body>
 </html>
