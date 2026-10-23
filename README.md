@@ -22,7 +22,7 @@ The bracketed benchmark, investor and broker fields in your original config are 
 3. Commit the files to `main`. If `.nojekyll` was omitted by your uploader, use Add file → Create new file to create an empty file with that exact name.
 4. Open Settings → Pages. Under Build and deployment select Deploy from a branch, then `main` and `/(root)`. Save.
 5. Wait for the Pages deployment to finish. Open the URL shown in Settings → Pages, normally `https://YOUR-USERNAME.github.io/invest-dashboard/`.
-6. Check all four navigation tabs. The example warning and incomplete-setup notice are expected.
+6. Check the two large navigation buttons: This month and Portfolio. The example warning and incomplete-setup notice are expected.
 
 GitHub's instructions: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
 
@@ -33,9 +33,9 @@ GitHub's instructions: https://docs.github.com/en/pages/getting-started-with-git
 3. Enter `data/entries/2026-11.json` (substitute the actual month). Paste the complete entry. JSON needs double quotes, no comments and no trailing commas.
 4. Select Commit changes. Use a message such as `Entry 2026-11`; commit to your publishing branch or merge a pull request into it.
 5. Open `data/index.json`, select the pencil/Edit button, and insert `"entries/2026-11.json",` as the first item in `entries`. Leave older entries in their original order. Ensure the final item has no trailing comma. Remove `entries/example.json` when desired.
-6. Commit this index change. Once deployment finishes, refresh This month and open the issue in Archive. If validation fails, the page names all missing or invalid fields. Edit the JSON and commit the correction.
+6. Commit this index change. Once deployment finishes, refresh This month to see the new issue. If validation fails, the page names all missing or invalid fields. Edit the JSON and commit the correction.
 
-Only the new issue and its index line are needed to add a month. Updating real purchases and price snapshots is separate. Old entry files are never rewritten by the website. Archive displays their saved research, with monetary masking if enabled; the current target allocation is explicitly labeled separately.
+Only the new issue and its index line are needed to add a month. Updating real purchases and price snapshots is separate. Old entry files are never rewritten by the website. Archive and Framework are hidden from the interface. Their source files remain in the repository.
 
 GitHub's file editor instructions: https://docs.github.com/en/repositories/working-with-files/managing-files/creating-new-files
 
@@ -47,9 +47,19 @@ Dates use `YYYY-MM-DD`, month uses `YYYY-MM`, and generated_at uses an ISO date-
 
 Entry names may contain letters, digits, hyphens or underscores and must be directly inside `data/entries/`. The index uses paths such as `entries/2026-11.json`, not `/data/entries/2026-11.json`. List newest first; month order is intentionally not guessed from filenames.
 
+## Add investments directly on the dashboard
+
+Use the Add an investment form on either page. Enter the USD amount paid, ticker, purchase date, bucket and USD fill price. Optionally enter actual shares (recommended when fees apply) and an ISIN. Without a share quantity, shares are calculated as amount divided by fill price, assuming no fees.
+
+New purchases immediately update portfolio totals and are stored locally in this browser under `invest-dashboard.purchases.v1`. They survive refreshes but do not sync to other devices or write to GitHub. Clearing browser data removes them. Amount inputs are visible while you fill them in; saved summaries follow the percentage-only display setting.
+
+Use Download holdings.json to back up the combined published and local ledger. To sync it across devices, replace `data/holdings.json` in GitHub with that download. The file contains exact financial amounts and share quantities, so publishing it makes those values accessible. Matching local purchase lots are counted only once after the file is published; repeated identical lots are matched by count.
+
+Open Purchases saved on this device to remove an unpublished local purchase. Undo remove restores the last removed purchase during the current session. Published purchase lots must be edited in `data/holdings.json`.
+
 ## Log purchases and update prices
 
-`data/holdings.json` is an array of purchase lots. Each object requires date, ticker, isin, bucket (`core` or `satellite`), amount_usd, price and shares. The date is the real execution date. Price is the USD-equivalent execution price per share; amount_usd is total USD cash outlay, including fees if applicable. Shares are actual acquired shares, including fractions. Keep the same ticker, ISIN and bucket for repeated purchases of one position. Numbers must be positive.
+`data/holdings.json` is an array of purchase lots. Each object requires date, ticker, isin (an empty string is allowed when unknown), bucket (`core` or `satellite`), amount_usd, price and shares. The date is the real execution date. Price is the USD-equivalent execution price per share; amount_usd is total USD cash outlay, including fees if applicable. Shares are actual acquired shares, including fractions. Keep the same ticker, ISIN and bucket for repeated purchases of one position. Numbers must be positive.
 
 `data/prices.json` has an `asOf` date and a `prices` object keyed by ticker. Each ticker maps to an array of `{ "date": "2026-11-02", "close": 100 }` objects. This numeric example illustrates the shape only. Closes must be positive, dates unique per ticker, and no date later than asOf. With no data, retain `{ "asOf": null, "prices": {} }`.
 
