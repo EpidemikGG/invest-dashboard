@@ -49,7 +49,7 @@ Entry names may contain letters, digits, hyphens or underscores and must be dire
 
 ## Add investments directly on the dashboard
 
-Use the Add an investment form on either page. Enter the USD amount paid, ticker, purchase date, bucket and USD fill price. Optionally enter actual shares (recommended when fees apply) and an ISIN. Without a share quantity, shares are calculated as amount divided by fill price, assuming no fees.
+Use the Add an investment form at the bottom of This month. Enter the USD amount paid, ticker, purchase date, bucket and USD fill price. Optionally enter actual shares (recommended when fees apply) and an ISIN. Without a share quantity, shares are calculated as amount divided by fill price, assuming no fees.
 
 New purchases immediately update portfolio totals and are stored locally in this browser under `invest-dashboard.purchases.v1`. They survive refreshes but do not sync to other devices or write to GitHub. Clearing browser data removes them. Amount inputs are visible while you fill them in; saved summaries follow the percentage-only display setting.
 
@@ -104,4 +104,18 @@ This month shows purchases in the current calendar month in Europe/Bucharest, it
 
 Account balance equals recorded investment value plus the optional uninvested cash balance saved in this browser. Investment prices use the most recent date shared by every holding, without depending on a benchmark. When there is no complete price snapshot, investment value falls back to purchase outlay and is labelled recorded cost; gain/loss is unavailable. The cash field is a manual snapshot: update it after deposits, withdrawals and trades. Purchases do not deduct cash automatically. Cash is excluded from investment allocation and performance returns. It is not included in the holdings.json export.
 
-The Add an investment form appears at the bottom of both pages. The setup and percentage-view notices have been removed.
+The Add an investment form appears only at the bottom of This month. Portfolio is a read-only history and performance view. The setup and percentage-view notices have been removed.
+
+## Monthly research reviews
+
+Research is displayed above the monthly allocation and has three accessible tabs: Stock reviews, Market & decisions, and Prompt & method. Use MONTHLY_PROMPT.md to request a monthly ChatGPT research run. The dashboard reads its saved report; it does not call ChatGPT.
+
+The original entry schema remains valid. New optional top-level fields are research_prompt and research_summary (strings). A pick may additionally include sentiment_score (integer 0–100 or null) and sentiment_reason (string). Invalid supplied values fail validation. The UI maps 80–100 to Strong buy, 60–79 to Buy, 40–59 to Neutral, 20–39 to Weak buy, and 0–19 to Avoid. A missing/null score shows Not scored. Confidence is separate; no score is guessed from it. Share prices are dated research snapshots in each pick’s stated currency.
+
+Stock cards show ticker, share price, score, sentiment, confidence, risk, suggested allocation, thesis, bear case, catalysts, metrics, checks and numbered sources. The prompt tab records the actual request used for that month. No current-month research or financial history is invented when files are empty.
+
+## Individual-stock performance
+
+Portfolio shows all purchases, account totals, each position’s gain/loss, a multi-stock return chart and a selected stock’s closing-price chart with actual fills marked. Individual position values use each ticker’s latest quote on or after its last purchase; account totals use a shared valuation date. Returns equal value divided by cumulative actual purchase outlay, minus one. They include repeat buys and fractional shares and are not annualized or time-weighted. Dates with no quote remain chart gaps. The exact-history table remains usable if Chart.js fails.
+
+Add real dated prices to data/prices.json to populate performance charts. Empty price files show an explanation and purchase history, never made-up market performance. Research sentiment does not affect performance calculations. Portfolio has no purchase or cash-edit forms; any cash value saved previously is preserved in the account total.

@@ -2,7 +2,7 @@
 
 // All fetched JSON is local to ./data/. Personal purchase additions use browser storage.
 const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json' };
-const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '', cashBalance: 0, cashMessage: '' };
+const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '', cashBalance: 0, cashMessage: '', researchTab: 'stocks', selectedStock: null, positionCharts: [] };
 const $ = s => document.querySelector(s);
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const number = v => typeof v === 'number' && Number.isFinite(v);
@@ -59,6 +59,7 @@ function validate(value, schema, path = '', errors = []) {
 }
 function assertValid(data, schema, file) {
   const errors = validate(data, schema);
+  if (schema === entrySchema) errors.push(...researchExtras(data));
   if (errors.length) throw new Error(`${file}\n${errors.join('\n')}`);
   return data;
 }
@@ -180,7 +181,7 @@ function accountTiles(account, holdings) {
 }
 function purchaseLedger(holdings, title, values = null) {
   const total = holdings.reduce((sum, h) => sum + h.amount_usd, 0);
-  if (!holdings.length) return panel(title, empty('No purchases recorded for this period. Use Add an investment below.'));
+  if (!holdings.length) return panel(title, empty('No purchases recorded for this period. Add and manage investments in This month.'));
   return panel(title, `<div class="scroll"><table><thead><tr>${['Date', 'Ticker', 'Bucket', privateMode() ? 'Contribution %' : 'Invested (USD)', ...(!privateMode() ? ['Fill price (USD)', 'Shares'] : []), ...(values ? [privateMode() ? 'Value %' : 'Value / cost (USD)'] : [])].map(label => `<th scope="col">${esc(label)}</th>`).join('')}</tr></thead><tbody>${holdings.map((h, i) => `<tr><td>${esc(h.date)}</td><td>${text(h.ticker)}</td><td>${esc(h.bucket)}</td><td>${money(h.amount_usd, total)}</td>${!privateMode() ? `<td>${fmt(h.price)}</td><td>${fmt(h.shares)}</td>` : ''}${values ? `<td>${money(values[i], total)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`);
 }
 const CASH_KEY = 'invest-dashboard.cash.v1';
@@ -241,6 +242,110 @@ function entryHTML(e) {
   if (!e.picks.length && !e.no_buy_reason.trim()) flags.push('No picks and no no-buy explanation supplied.');
   return `<article><div class="section-head"><div><h2>Monthly brief / ${esc(e.month)}</h2><p>Generated ${esc(e.generated_at)} · ${text(e.model)} · data as of ${esc(e.data_as_of)}</p></div>${tag('RESEARCH SNAPSHOT')}</div>${[...flags, ...e.warnings].map(w => `<div class="notice">${text(w)}</div>`).join('')}<div class="grid">${panel('Market context', paragraph(e.market_context) + (e.no_buy_reason ? '<h3>No-buy reason</h3>' + paragraph(e.no_buy_reason) : ''))}${panel('Monthly allocation', allocationBar(e.allocation.core_usd, e.allocation.satellite_usd, 'Issue plan · core / satellite') + allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Current target · core / satellite') + `<p class="meta">Budget ${money(e.budget_usd, state.config.budget_usd_per_month)} · Core ${money(e.allocation.core_usd, e.budget_usd)} · Satellite ${money(e.allocation.satellite_usd, e.budget_usd)}</p>`)}</div>${panel('Picks / research metrics', picksTable(e.picks, e.budget_usd))}<div class="grid">${panel('Investment cases', e.picks.map(p => pickDetails(p, e.budget_usd)).join('') || empty('No purchases proposed.'))}${panel('Framework checks', `<p class="meta">Reported by this issue’s researcher; not independently verified by the website.</p>${e.picks.map(p => `<h3>${text(p.ticker)}</h3>${checksHTML(p.checks)}`).join('') || empty('No pick checks recorded.')}`)}</div>${panel('Last month revisited', e.review_of_previous.map(r => `<div class="list-row"><strong>${text(r.ticker)}</strong> ${tag(r.thesis_status)} ${tag(r.action)} <span class="num">${pct(r.change_pct)}</span>${paragraph(r.note)}</div>`).join('') || empty('No previous review recorded.'))}<div class="grid equal">${panel('Watchlist', e.watchlist.map(w => `<div class="list-row"><strong>${text(w.ticker)}</strong>${paragraph(w.trigger)}</div>`).join('') || empty('No watchlist names.'))}${panel('Rejected names', e.rejected.map(r => `<div class="list-row"><strong>${text(r.ticker)}</strong>${paragraph(r.reason)}</div>`).join('') || empty('No rejected names recorded.'))}</div></article>`;
 }
+function researchExtras(entry) {
+  const errors = [];
+  if (!object(entry)) return errors;
+  for (const key of ['research_prompt', 'research_summary']) if (key in entry && !str(entry[key])) errors.push(`${key}: expected text`);
+  if (Array.isArray(entry.picks)) entry.picks.forEach((p, i) => {
+    if (!object(p)) return;
+    if ('sentiment_score' in p && p.sentiment_score !== null && (!Number.isInteger(p.sentiment_score) || p.sentiment_score < 0 || p.sentiment_score > 100)) errors.push(`picks[${i}].sentiment_score: expected an integer from 0 to 100, or null`);
+    if ('sentiment_reason' in p && !str(p.sentiment_reason)) errors.push(`picks[${i}].sentiment_reason: expected text`);
+  });
+  return errors;
+}
+function sentiment(score) {
+  if (!Number.isInteger(score) || score < 0 || score > 100) return { label: 'Not scored', className: 'unscored' };
+  return score >= 80 ? { label: 'Strong buy', className: 'positive' } : score >= 60 ? { label: 'Buy', className: 'positive' } : score >= 40 ? { label: 'Neutral', className: 'neutral' } : score >= 20 ? { label: 'Weak buy', className: 'cautious' } : { label: 'Avoid', className: 'cautious' };
+}
+function researchPrice(pick) {
+  if (privateMode()) return 'Hidden';
+  try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: pick.currency }).format(pick.price_at_research); }
+  catch { return `${fmt(pick.price_at_research)} ${text(pick.currency)}`; }
+}
+function researchCard(pick, budget) {
+  const grade = sentiment(pick.sentiment_score);
+  const scored = grade.className !== 'unscored';
+  return `<article class="research-card"><div class="section-head"><div><h3 class="stock-symbol">${text(pick.ticker)}</h3><p>${text(pick.name)} · ${text(pick.exchange)}</p></div>${tag(`${pick.risk} risk`)}</div><div class="research-numbers"><div><span class="kpi-label">Share price at research</span><strong class="num">${researchPrice(pick)}</strong><small>As of ${esc(pick.price_date)}</small></div><div><span class="kpi-label">Buy sentiment</span><strong class="sentiment ${grade.className}">${grade.label}</strong><span class="sentiment-score num">${scored ? `${pick.sentiment_score} / 100` : '— / 100'}</span></div></div>${scored ? `<meter min="0" max="100" value="${pick.sentiment_score}" aria-label="${text(pick.ticker)} research sentiment score">${pick.sentiment_score}</meter>` : '<p class="meta">This research did not include a sentiment score.</p>'}${pick.sentiment_reason ? paragraph(pick.sentiment_reason) : ''}<div class="research-tags">${tag(`${pick.confidence} confidence`)}${tag(pick.bucket)}${tag(`${pick.sources.length} sources`)}</div><h4>Investment case</h4>${paragraph(pick.thesis)}<h4>Biggest risk</h4>${paragraph(pick.bear_case)}<div class="check-row"><span>Proposed allocation</span><strong class="num">${money(pick.amount_usd, budget)}</strong></div>${pickDetails(pick, budget)}</article>`;
+}
+function researchPanel(entry, month) {
+  const selected = ['stocks', 'context', 'prompt'].includes(state.researchTab) ? state.researchTab : 'stocks';
+  const tabs = [['stocks', 'Stock reviews'], ['context', 'Market & decisions'], ['prompt', 'Prompt & method']];
+  const stocks = entry ? (entry.picks.length ? `<div class="research-cards">${entry.picks.map(p => researchCard(p, entry.budget_usd)).join('')}</div>` : empty(entry.no_buy_reason || 'This month’s research proposed no purchases.')) : empty('No ChatGPT research has been saved for this month yet. A monthly research run will add the stock symbols, dated share prices, sentiment scores, thesis and sources here.');
+  const context = entry ? `<h3>Monthly view</h3>${paragraph(entry.research_summary || entry.market_context)}${entry.no_buy_reason ? `<h3>No-buy explanation</h3>${paragraph(entry.no_buy_reason)}` : ''}${entry.warnings.map(w => `<div class="notice">${text(w)}</div>`).join('')}<h3>Watchlist</h3>${entry.watchlist.map(w => `<div class="list-row"><strong>${text(w.ticker)}</strong>${paragraph(w.trigger)}</div>`).join('') || empty('No watchlist recorded.')}<h3>Rejected names</h3>${entry.rejected.map(w => `<div class="list-row"><strong>${text(w.ticker)}</strong>${paragraph(w.reason)}</div>`).join('') || empty('No rejected names recorded.')}` : empty('Market context and research decisions will appear with this month’s report.');
+  const prompt = `<h3>Your research prompt</h3>${entry?.research_prompt ? paragraph(entry.research_prompt) : empty('No user prompt was saved for this month.')}<h3>Sentiment scale</h3><p>80–100 Strong buy · 60–79 Buy · 40–59 Neutral · 20–39 Weak buy · 0–19 Avoid.</p><p>Scores are the monthly researcher’s assessment, not a probability of profit. No score is calculated from confidence or invented by the dashboard. Share prices are research snapshots, not live quotes.</p>${entry ? `<p class="meta">Model: ${text(entry.model)} · Generated ${esc(entry.generated_at)} · Data as of ${esc(entry.data_as_of)}</p>` : '<p class="meta">The monthly entry can save research_prompt, research_summary, and a sentiment_score and sentiment_reason for each pick.</p>'}`;
+  return `<section class="panel research-panel" aria-labelledby="research-heading"><div class="section-head"><div><h2 id="research-heading">Research / ${esc(month)}</h2><p>ChatGPT stock research · based on your monthly prompt</p></div>${tag(entry ? 'SAVED MONTHLY REPORT' : 'AWAITING THIS MONTH’S RESEARCH')}</div><div class="research-tabs" role="tablist" aria-label="Monthly research">${tabs.map(([id, label]) => `<button type="button" role="tab" id="research-tab-${id}" data-research-tab="${id}" aria-selected="${selected === id}" aria-controls="research-pane-${id}" tabindex="${selected === id ? 0 : -1}">${label}</button>`).join('')}</div>${[['stocks', stocks], ['context', context], ['prompt', prompt]].map(([id, body]) => `<div id="research-pane-${id}" role="tabpanel" aria-labelledby="research-tab-${id}" ${selected === id ? '' : 'hidden'}>${body}</div>`).join('')}</section>`;
+}
+function bindResearch() {
+  const tabs = [...document.querySelectorAll('[data-research-tab]')];
+  const select = tab => {
+    state.researchTab = tab.dataset.researchTab;
+    tabs.forEach(button => { const active = button === tab; button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1; document.getElementById(button.getAttribute('aria-controls')).hidden = !active; });
+    tab.focus();
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', event => {
+      let next;
+      if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = tabs.length - 1;
+      if (next !== undefined) { event.preventDefault(); select(tabs[next]); }
+    });
+  });
+}
+
+function positionHistory(holdings, prices) {
+  const groups = new Map();
+  holdings.forEach(h => { if (!groups.has(h.ticker)) groups.set(h.ticker, []); groups.get(h.ticker).push(h); });
+  return [...groups].map(([ticker, lots]) => {
+    const first = lots.reduce((d, p) => p.date < d ? p.date : d, lots[0].date);
+    const lastBuy = lots.reduce((d, p) => p.date > d ? p.date : d, first);
+    const invested = lots.reduce((sum, p) => sum + p.amount_usd, 0);
+    const rows = (prices?.prices?.[ticker] || []).filter(r => r.date >= first && r.date <= prices.asOf).sort((a, b) => a.date.localeCompare(b.date)).map(r => {
+      const active = lots.filter(p => p.date <= r.date);
+      const cost = active.reduce((sum, p) => sum + p.amount_usd, 0);
+      const value = active.reduce((sum, p) => sum + p.shares * r.close, 0);
+      return { date: r.date, close: r.close, cost, value, returnPct: (value / cost - 1) * 100 };
+    });
+    return { ticker, lots, invested, rows, latest: rows.filter(r => r.date >= lastBuy).at(-1) || null };
+  });
+}
+function positionsPanel() {
+  const positions = positionHistory(state.holdings, state.errors.prices ? null : state.prices);
+  if (!positions.length) return panel('Stock performance', empty('Your individual stocks, dated returns and charts will appear here after purchases and price history are recorded.'));
+  const total = positions.reduce((sum, p) => sum + p.invested, 0);
+  const table = `<div class="scroll"><table><caption class="meta">Returns on your actual purchase outlays. Each position uses its own latest available price date; the account balance uses a shared date.</caption><thead><tr><th>Symbol</th><th>Invested</th><th>Value</th><th>Gain / loss</th><th>Return</th><th>Price date</th></tr></thead><tbody>${positions.map(p => `<tr><td>${text(p.ticker)}</td><td>${money(p.invested, total)}</td><td>${p.latest ? money(p.latest.value, total) : '—'}</td><td>${p.latest ? money(p.latest.value - p.invested, p.invested) : '—'}</td><td>${p.latest ? pct(p.latest.returnPct) : '—'}</td><td>${p.latest?.date || 'Awaiting prices'}</td></tr>`).join('')}</tbody></table></div>`;
+  const hasPrices = positions.some(p => p.rows.length);
+  const selected = positions.find(p => p.ticker === state.selectedStock) || positions[0];
+  state.selectedStock = selected.ticker;
+  return panel('Stock performance', table + (hasPrices ? `<h3>Return by stock (%)</h3><p class="meta">Cumulative gain divided by cash invested to each date. Dates without quotes remain gaps.</p><div class="chart-wrap"><canvas id="stock-returns-chart" role="img" aria-label="Return on actual purchases for each stock"></canvas></div><p id="stock-returns-note" class="meta"></p>` : empty('No dated prices are available yet. Add each holding’s price history to see real performance; purchase prices alone are not treated as market quotes.')) + `<div class="section-head stock-history-head"><h3>Stock price history</h3><label>Stock <select id="stock-select" aria-label="Stock price history">${positions.map(p => `<option value="${esc(p.ticker)}" ${p.ticker === selected.ticker ? 'selected' : ''}>${text(p.ticker)}</option>`).join('')}</select></label></div>${selected.rows.length ? `<div class="chart-wrap"><canvas id="stock-price-chart" role="img" aria-label="${text(selected.ticker)} closing prices and your fill prices"></canvas></div><p id="stock-price-note" class="meta">USD prices. Points mark your actual fills.</p><details><summary>${text(selected.ticker)} / exact history</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Close (USD)</th><th>Value</th><th>Return</th></tr></thead><tbody>${selected.rows.map(r => `<tr><td>${r.date}</td><td>${privateMode() ? 'Hidden' : fmt(r.close)}</td><td>${money(r.value, r.cost)}</td><td>${pct(r.returnPct)}</td></tr>`).join('')}</tbody></table></div></details>` : empty(`No price history is available for ${selected.ticker}.`)}`);
+}
+function drawPositionCharts() {
+  const positions = positionHistory(state.holdings || [], state.errors.prices ? null : state.prices);
+  const returnsCanvas = $('#stock-returns-chart'), priceCanvas = $('#stock-price-chart');
+  if (!returnsCanvas && !priceCanvas) return;
+  if (!window.Chart) { if ($('#stock-returns-note')) $('#stock-returns-note').textContent = 'Chart.js could not load. The stock table remains available.'; if ($('#stock-price-note')) $('#stock-price-note').textContent = 'Chart.js could not load. The exact history table remains available.'; return; }
+  const css = getComputedStyle(document.documentElement), ink = css.getPropertyValue('--muted').trim(), grid = css.getPropertyValue('--border').trim();
+  const colors = [css.getPropertyValue('--accent').trim(), '#51a98a', '#638fda', '#b587c4', '#c19442', '#39a4ac', '#c87290', '#799342', '#8d83db', '#d48b56'];
+  const options = unit => ({ responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: ink } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${unit === '%' ? pct(c.parsed.y) : privateMode() ? pct(c.parsed.y) : money(c.parsed.y)}` } } }, scales: { x: { ticks: { color: ink, maxTicksLimit: 6 }, grid: { display: false } }, y: { ticks: { color: ink, callback: v => unit === '%' || privateMode() ? `${v}%` : `$${v}` }, grid: { color: grid } } } });
+  if (returnsCanvas) {
+    const dates = [...new Set(positions.flatMap(p => p.rows.map(r => r.date)))].sort();
+    state.positionCharts.push(new Chart(returnsCanvas, { type: 'line', data: { labels: dates, datasets: positions.filter(p => p.rows.length).map((p, i) => { const values = new Map(p.rows.map(r => [r.date, r.returnPct])); return { label: p.ticker, data: dates.map(d => values.get(d) ?? null), borderColor: colors[i % colors.length], borderWidth: 2, pointRadius: 2, spanGaps: false }; }) }, options: options('%') }));
+  }
+  if (priceCanvas) {
+    const p = positions.find(p => p.ticker === state.selectedStock);
+    const dates = [...new Set([...p.rows.map(r => r.date), ...p.lots.map(r => r.date)])].sort();
+    const closes = new Map(p.rows.map(r => [r.date, r.close]));
+    const baseline = p.rows[0].close;
+    const scale = value => privateMode() ? (value / baseline - 1) * 100 : value;
+    state.positionCharts.push(new Chart(priceCanvas, { type: 'line', data: { labels: dates, datasets: [{ label: privateMode() ? `${p.ticker} price change (%)` : `${p.ticker} close (USD)`, data: dates.map(d => closes.has(d) ? scale(closes.get(d)) : null), borderColor: colors[0], borderWidth: 2, pointRadius: 2, spanGaps: false }, { label: 'Your fills', data: p.lots.map(lot => ({ x: lot.date, y: scale(lot.price) })), showLine: false, pointRadius: 5, pointBackgroundColor: colors[1], borderColor: colors[1] }] }, options: options('USD') }));
+  }
+}
+function bindStockSelect() {
+  $('#stock-select')?.addEventListener('change', event => { state.selectedStock = event.target.value; render(); $('#stock-select')?.focus(); });
+}
+
 function monthPage() {
   const month = currentMonth();
   const issue = state.entries.find(e => e.data?.month === month || e.error && e.path === `entries/${month}.json`);
@@ -258,8 +363,8 @@ function monthPage() {
     ['Purchases this month', holdings.length, 'Current calendar month only'],
     ['Positions added to', new Set(holdings.map(h => h.ticker)).size, 'Tickers bought this month']
   ]);
-  const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : entry ? entryHTML(entry) : panel(`Research / ${month}`, empty('No research issue has been published for this month yet. Your monthly purchases are shown above.'));
-  return `<p class="period-label">${esc(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Bucharest', month: 'long', year: 'numeric' }).format(new Date()))} · current month</p>` + (state.errors.holdings ? errorBox(state.errors.holdings) : summary + panel('This month’s allocation', allocationBar(core, satellite, 'Purchases this month · core / satellite')) + purchaseLedger(holdings, 'This month’s purchases')) + research;
+  const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : researchPanel(entry, month);
+  return `<p class="period-label">${esc(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Bucharest', month: 'long', year: 'numeric' }).format(new Date()))} · current month</p>` + (state.errors.holdings ? errorBox(state.errors.holdings) + research : summary + research + panel('This month’s allocation', allocationBar(core, satellite, 'Purchases this month · core / satellite')) + purchaseLedger(holdings, 'This month’s purchases'));
 }
 
 function portfolioPage() {
@@ -280,7 +385,7 @@ function portfolioPage() {
   if (actual !== null && actual > state.config.limits.max_satellite_pct_of_portfolio) limits.push('Satellite weight exceeds the portfolio limit.');
   const allocation = allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Target · core / satellite') + allocationBar(core, satellite, account.valuedAt ? 'All investments · market value' : 'All investments · recorded cost') + `<p class="meta">Cash is excluded from the investment split.${actual === null ? '' : ` Satellite drift: ${(actual - state.config.split.satellite_pct).toFixed(2)} percentage points.`}</p>`;
   const chart = p ? `<p class="meta">${privateMode() ? 'Cumulative gain / contributed capital (%)' : 'Market value (USD)'} · all purchase dates</p><div class="chart-wrap"><canvas id="performance-chart" role="img" aria-label="All recorded investments versus benchmark. Values are in the performance table below."></canvas></div><p id="chart-note" class="meta"></p>` : empty('The benchmark chart will appear when a benchmark and matching price history are available. Your full recorded account balance is shown above.');
-  return `<p class="period-label">Entire account · all dates</p>` + accountTiles(account, h) + (state.errors.prices ? errorBox(state.errors.prices) : '') + limits.map(n => `<div class="notice">${text(n)}</div>`).join('') + `<div class="grid">${panel('Portfolio / benchmark', chart + comparisonNote)}${panel('Investment allocation', allocation)}</div>` + purchaseLedger(h, 'All purchases', account.values) + (p ? panel('Performance / all dates', `<p class="meta">Comparison as of ${esc(p.date)}. Cash is excluded from investment returns.</p><details><summary>View performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn - r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '') + cashForm();
+  return `<p class="period-label">Entire account · all dates</p>` + accountTiles(account, h) + (state.errors.prices ? errorBox(state.errors.prices) : '') + limits.map(n => `<div class="notice">${text(n)}</div>`).join('') + `<div class="grid">${panel('Portfolio / benchmark', chart + comparisonNote)}${panel('Investment allocation', allocation)}</div>` + positionsPanel() + purchaseLedger(h, 'All purchases', account.values) + (p ? panel('Performance / all dates', `<p class="meta">Comparison as of ${esc(p.date)}. Cash is excluded from investment returns.</p><details><summary>View performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn - r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '');
 }
 
 function drawChart() {
@@ -440,6 +545,7 @@ function bindSort() {
 }
 function render() {
   state.chart?.destroy(); state.chart = null;
+  state.positionCharts.forEach(chart => chart.destroy()); state.positionCharts = [];
   let route = location.hash.slice(1) || 'month';
   if (['archive', 'framework'].includes(route)) { route = 'month'; history.replaceState(null, '', '#month'); }
   const names = { month: 'This month', portfolio: 'Portfolio' };
@@ -453,7 +559,7 @@ function render() {
     if (route === 'month') body = monthPage();
     else if (route === 'portfolio') body = portfolioPage();
     else body = panel('Page not found', '<p>Choose a page in the navigation.</p>');
-    $('#content').innerHTML = body + (['month', 'portfolio'].includes(route) ? purchaseForm() : ''); bindSort(); bindPurchases(); bindCash(); drawChart();
+    $('#content').innerHTML = body + (route === 'month' ? purchaseForm() : ''); bindSort(); bindPurchases(); bindResearch(); bindStockSelect(); drawChart(); drawPositionCharts();
   } catch (e) { $('#content').innerHTML = errorBox(e); }
 }
 async function start() {
@@ -486,4 +592,4 @@ async function start() {
 }
 if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTML = errorBox(e); });
 // Enables deterministic arithmetic/validation tests without adding browser dependencies.
-if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, mergePurchases, purchaseFromFields, loadLocalPurchases };
+if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases };
