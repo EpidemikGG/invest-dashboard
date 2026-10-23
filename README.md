@@ -1,3 +1,7 @@
+## Inline editing and Total Value P&L
+
+Modify expands a configuration row immediately below the chosen position. Close, Cancel or clicking Modify again collapses it without saving. Saving also closes the editor. Total Value includes an account P&L graph: historical unrealized profit/loss when at least two complete dated valuations exist; otherwise a contribution bar graph by holding. Missing quotes are labelled N/A and excluded only from the explicitly labelled known P&L subtotal. The complete account P&L is never guessed. P&L equals shares times market price minus original outlay, excludes uninvested cash, dividends and sales, and requires no benchmark. Intraday snapshots remain separate from historical closing data.
+
 ## Portfolio navigation and gain/loss bars
 
 Modify and Remove sit immediately beside each stock symbol. Back to stocks and Cancel discard unsaved form changes and return focus to the position list. Saving or removing a purchase closes the editor and returns to the list. Each symbol shows a green/red diverging bar, percentage return on actual outlay and USD gain/loss when amounts are visible. The center line is break-even; the bar uses a ±10% scale, expanding for moves beyond that range. These bars show a single valuation, not a historical price trend. Missing prices display Awaiting market price.
