@@ -1,7 +1,7 @@
 'use strict';
 
 // All fetched JSON is local to ./data/. Personal purchase additions use browser storage.
-const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json' };
+const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json', preview: './data/design-preview.json' };
 const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '', cashBalance: 0, cashMessage: '', researchTab: 'stocks', selectedStock: null, positionCharts: [] };
 const $ = s => document.querySelector(s);
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -268,10 +268,27 @@ function researchPrice(pick) {
   try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: pick.currency }).format(pick.price_at_research); }
   catch { return `${fmt(pick.price_at_research)} ${text(pick.currency)}`; }
 }
+function icon(name, cls = '') {
+  return `<span class="material-symbols-outlined ${cls}" aria-hidden="true">${name}</span>`;
+}
+function stockCardHeader(ticker, name, label, score, category, price, example = false) {
+  const tone = example ? (label === 'Confident' ? 'confident' : label === 'Bullish' ? 'bullish' : 'weak') : score === null ? 'unscored' : score >= 80 ? 'confident' : score >= 60 ? 'bullish' : score >= 40 ? 'neutral' : 'weak';
+  return `<div class="stock-card-head"><div class="stock-identity"><div class="stock-title"><h2>${text(ticker)}</h2><span class="company-name">${text(name)}</span><span class="sentiment-badge ${tone}">${text(label)}</span></div><p class="stock-meta">${text(category)} · ${example ? 'Sample price' : 'Research price'}: ${price}</p></div><div class="conviction ${tone}"><div><span class="score-label">Conviction score</span><strong>${score === null ? '—' : score}<small>/100</small></strong></div>${score === null ? '' : `<meter min="0" max="100" value="${score}" aria-label="${text(ticker)} conviction score">${score} / 100</meter>`}</div></div>`;
+}
+function cardAction(ticker, bucket = '', isin = '') {
+  return `<div class="stock-card-action"><button type="button" class="outline-button" data-prefill-ticker="${esc(ticker)}" data-prefill-bucket="${esc(bucket)}" data-prefill-isin="${esc(isin)}">${icon('add')}Add to Investment Form</button></div>`;
+}
 function researchCard(pick, budget) {
-  const grade = sentiment(pick.sentiment_score);
-  const scored = grade.className !== 'unscored';
-  return `<article class="research-card" data-sentiment="${!scored ? 'unscored' : pick.sentiment_score >= 90 ? 'confident' : pick.sentiment_score >= 70 ? 'bullish' : pick.sentiment_score >= 40 ? 'neutral' : 'weak'}"><div class="section-head"><div><h3 class="stock-symbol">${text(pick.ticker)}</h3><p>${text(pick.name)} · ${text(pick.exchange)}</p></div>${tag(`${pick.risk} risk`)}</div><div class="research-numbers"><div><span class="kpi-label">Share price at research</span><strong class="num">${researchPrice(pick)}</strong><small>As of ${esc(pick.price_date)}</small></div><div><span class="kpi-label">Buy sentiment</span><strong class="sentiment ${grade.className}">${grade.label}</strong><span class="sentiment-score num">${scored ? `${pick.sentiment_score} / 100` : '— / 100'}</span></div></div>${scored ? `<meter min="0" max="100" value="${pick.sentiment_score}" aria-label="${text(pick.ticker)} research sentiment score">${pick.sentiment_score}</meter>` : '<p class="meta">This research did not include a sentiment score.</p>'}${pick.sentiment_reason ? paragraph(pick.sentiment_reason) : ''}<div class="research-tags">${tag(`${pick.confidence} confidence`)}${tag(pick.bucket)}${tag(`${pick.sources.length} sources`)}</div><h4>Investment case</h4>${paragraph(pick.thesis)}<h4>Biggest risk</h4>${paragraph(pick.bear_case)}<div class="check-row"><span>Proposed allocation</span><strong class="num">${money(pick.amount_usd, budget)}</strong></div>${pickDetails(pick, budget)}</article>`;
+  const grade = sentiment(pick.sentiment_score), score = grade.className === 'unscored' ? null : pick.sentiment_score;
+  return `<article class="stock-card">${stockCardHeader(pick.ticker, pick.name, grade.label, score, `${pick.exchange} / ${pick.instrument} · ${pick.price_date}`, researchPrice(pick))}<div class="stock-notes"><div>${icon('chat','signal-positive')}<p><strong>Investment case:</strong> ${text(pick.thesis)}</p></div><div>${icon('waterfall_chart','signal-positive')}<p><strong>Catalysts:</strong> ${text(pick.catalysts.join(' · ') || 'No catalysts supplied.')}</p></div><div>${icon('shield','signal-risk')}<p><strong>Biggest risk:</strong> ${text(pick.bear_case)}</p></div><div>${icon('description','signal-positive')}<p><strong>Sources & filings:</strong> ${pick.sources.length} linked sources in the research details below.</p></div></div>${pick.sentiment_reason ? `<p class="meta score-reason">${text(pick.sentiment_reason)}</p>` : ''}<div class="research-tags">${tag(`${pick.confidence} confidence`)}${tag(`${pick.risk} risk`)}${tag(pick.bucket)}${tag(`Allocation: ${money(pick.amount_usd,budget)}`)}</div>${pickDetails(pick,budget)}${cardAction(pick.ticker,pick.bucket,pick.isin)}</article>`;
+}
+function validatePreview(data) {
+  return assertValid(data, {kind: oneOf('design_preview'), source: nonempty, notice: nonempty, stocks: [{ticker: nonempty,name: nonempty,category: nonempty,price: positive,currency: oneOf('USD'),sentiment: oneOf('Confident','Bullish','Weak'),score: v => Number.isInteger(v) && v >= 0 && v <= 100,notes:[{label:nonempty,text:nonempty}]}]}, FILES.preview);
+}
+function previewCards() {
+  if (state.errors.preview) return errorBox(state.errors.preview);
+  if (!state.preview) return empty('No research or design examples are available.');
+  return `<p class="design-note">${icon('info')}<span>${text(state.preview.notice)}</span></p><div class="stock-list">${state.preview.stocks.map(p => `<article class="stock-card" data-design-example="true">${stockCardHeader(p.ticker,p.name,p.sentiment,p.score,p.category,money(p.price),true)}<div class="stock-notes">${p.notes.map((n,i) => `<div>${icon(['chat','waterfall_chart','verified'][i] || 'description',p.sentiment === 'Weak' ? 'signal-risk' : 'signal-positive')}<p><strong>${text(n.label.replace('Verified Sources','Sources'))}:</strong> ${text(n.text)}</p></div>`).join('')}</div>${cardAction(p.ticker)}</article>`).join('')}</div>`;
 }
 function researchPanel(entry, month) {
   const selected = ['stocks', 'context', 'prompt'].includes(state.researchTab) ? state.researchTab : 'stocks';
@@ -296,7 +313,7 @@ function bindResearch() {
       else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
       else if (event.key === 'Home') next = 0;
       else if (event.key === 'End') next = tabs.length - 1;
-      if (next !== undefined) { event.preventDefault(); select(tabs[next]); }
+      if (next !== undefined && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); select(tabs[next]); }
     });
   });
 }
@@ -356,42 +373,40 @@ function monthPage() {
   const month = currentMonth();
   const issue = state.entries.find(e => e.data?.month === month || e.error && e.path === `entries/${month}.json`);
   const entry = issue?.data;
-  const holdings = monthPurchases(state.holdings || [], month);
-  const invested = holdings.reduce((sum, h) => sum + h.amount_usd, 0);
-  const budget = entry?.budget_usd ?? state.config.budget_usd_per_month;
-  const core = holdings.filter(h => h.bucket === 'core').reduce((sum, h) => sum + h.amount_usd, 0);
-  const satellite = invested - core;
-  const difference = budget - invested;
-  const summary = tiles([
-    ['Invested this month', money(invested, budget), month],
-    ['Monthly budget', money(budget, budget), 'Plan for this calendar month'],
-    [difference >= 0 ? 'Budget remaining' : 'Above budget', money(Math.abs(difference), budget), 'Based on recorded purchases'],
-    ['Purchases this month', holdings.length, 'Current calendar month only'],
-    ['Positions added to', new Set(holdings.map(h => h.ticker)).size, 'Tickers bought this month']
-  ]);
-  const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : researchPanel(entry, month);
-  return `<p class="period-label">${esc(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Bucharest', month: 'long', year: 'numeric' }).format(new Date()))} · current month</p>` + (state.errors.holdings ? errorBox(state.errors.holdings) + research : summary + research + panel('This month’s allocation', allocationBar(core, satellite, 'Purchases this month · core / satellite')) + purchaseLedger(holdings, 'This month’s purchases'));
+  const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : entry ? researchPanel(entry,month) : previewCards();
+  const holdings = monthPurchases(state.holdings || [],month);
+  const core = holdings.filter(h => h.bucket === 'core').reduce((s,h) => s+h.amount_usd,0);
+  const satellite = holdings.filter(h => h.bucket === 'satellite').reduce((s,h) => s+h.amount_usd,0);
+  return `<section id="view-this-month"><div class="page-intro"><h1 id="page-title">Top Investment Picks for This Month</h1><p>Stock research combining community sentiment, institutional activity, and source filings.</p></div><div class="month-layout"><div class="month-main">${research}<details class="monthly-details"><summary>Research / ${esc(month)} · allocation & purchases</summary><div class="detail-body">${state.errors.holdings ? errorBox(state.errors.holdings) : panel('This month’s allocation',allocationBar(core,satellite,'Purchases this month · core / satellite')) + purchaseLedger(holdings,'This month’s purchases')}</div></details></div><aside class="investment-sidebar">${purchaseForm()}</aside></div></section>`;
 }
-
+function activePositionsTable(holdings, prices) {
+  const positions = positionHistory(holdings, prices);
+  if (!positions.length) return panel('Active Positions',empty('No investments recorded yet. Use Add New Position to log a completed purchase.'));
+  const totalCost = positions.reduce((s,p) => s+p.invested,0);
+  const rows = positions.map(p => {
+    const shares = p.lots.reduce((s,h) => s+h.shares,0), avg = p.invested/shares;
+    const first = p.lots.reduce((d,h) => h.date < d ? h.date : d,p.lots[0].date);
+    return `<tr><td class="ticker-cell">${text(p.ticker)}</td>${privateMode() ? '' : `<td>${shares.toLocaleString('en-US',{maximumFractionDigits:12})}</td><td>${money(avg)}<small class="price-basis">Average cost / share</small></td><td>${p.latest ? money(p.latest.close) : '—'}<small class="price-basis">${p.latest?.date || 'Awaiting prices'}</small></td>`}<td>${money(p.latest?.value ?? p.invested,totalCost)}${p.latest ? '' : '<small class="price-basis">Recorded cost</small>'}</td><td>${esc(first)}</td></tr>`;
+  }).join('');
+  return `<section class="panel holdings-panel"><h2>Active Positions</h2><div class="scroll" role="region" aria-label="Active positions table" tabindex="0"><table id="holdings-table"><thead><tr><th>Symbol</th>${privateMode() ? '' : '<th>Shares</th><th>Purchase Price</th><th>Current Price</th>'}<th>${privateMode() ? 'Contribution %' : 'Position Value'}</th><th>Date Added</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+}
 function portfolioPage() {
   if (state.errors.holdings) return errorBox(state.errors.holdings);
-  const h = state.holdings;
-  const account = accountSummary(h, state.errors.prices ? null : state.prices, state.cashBalance);
+  const h = state.holdings, account = accountSummary(h,state.errors.prices ? null : state.prices,state.cashBalance);
+  const count = new Set(h.map(p => p.ticker)).size;
   let result = null, comparisonNote = '';
   if (!state.config.benchmark.ticker.includes('[')) {
-    try { result = getPerformance(); } catch (error) { comparisonNote = errorBox(error); }
+    try { result = getPerformance(); } catch(error) { comparisonNote = errorBox(error); }
   }
-  const p = result?.latest;
+  const latest = result?.latest;
   let core = 0, satellite = 0;
-  h.forEach((lot, i) => { if (lot.bucket === 'core') core += account.values[i]; else satellite += account.values[i]; });
-  const total = core + satellite;
-  const actual = total ? satellite / total * 100 : null;
-  const limits = [];
-  if (new Set(h.map(r => r.ticker)).size > state.config.limits.max_positions) limits.push('Position count exceeds the configured maximum.');
-  if (actual !== null && actual > state.config.limits.max_satellite_pct_of_portfolio) limits.push('Satellite weight exceeds the portfolio limit.');
-  const allocation = allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Target · core / satellite') + allocationBar(core, satellite, account.valuedAt ? 'All investments · market value' : 'All investments · recorded cost') + `<p class="meta">Cash is excluded from the investment split.${actual === null ? '' : ` Satellite drift: ${(actual - state.config.split.satellite_pct).toFixed(2)} percentage points.`}</p>`;
-  const chart = p ? `<p class="meta">${privateMode() ? 'Cumulative gain / contributed capital (%)' : 'Market value (USD)'} · all purchase dates</p><div class="chart-wrap"><canvas id="performance-chart" role="img" aria-label="All recorded investments versus benchmark. Values are in the performance table below."></canvas></div><p id="chart-note" class="meta"></p>` : empty('The benchmark chart will appear when a benchmark and matching price history are available. Your full recorded account balance is shown above.');
-  return `<p class="period-label">Entire account · all dates</p>` + accountTiles(account, h) + (state.errors.prices ? errorBox(state.errors.prices) : '') + limits.map(n => `<div class="notice">${text(n)}</div>`).join('') + `<div class="grid">${panel('Portfolio / benchmark', chart + comparisonNote)}${panel('Investment allocation', allocation)}</div>` + positionsPanel() + purchaseLedger(h, 'All purchases', account.values) + (p ? panel('Performance / all dates', `<p class="meta">Comparison as of ${esc(p.date)}. Cash is excluded from investment returns.</p><details><summary>View performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn - r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '');
+  h.forEach((lot,i) => { if(lot.bucket === 'core') core += account.values[i]; else satellite += account.values[i]; });
+  const allocation = allocationBar(state.config.split.core_pct,state.config.split.satellite_pct,'Target · core / satellite') + allocationBar(core,satellite,account.valuedAt ? 'Actual · market value' : 'Actual · recorded cost');
+  const chart = latest ? `<p class="meta">${privateMode() ? 'Return (%)' : 'Market value (USD)'} · same purchase dates and cash flows</p><div class="chart-wrap"><canvas id="performance-chart" role="img" aria-label="Portfolio versus benchmark"></canvas></div><p id="chart-note" class="meta"></p>` : empty('Benchmark comparison will appear when the benchmark and matching dated prices are available.');
+  const gainNote = account.gain === null ? 'Price history needed to calculate performance' : `${pct(account.gain/account.invested*100)} cumulative price return`;
+  const summary = `<div class="portfolio-summary"><div class="summary-card"><span class="summary-label">Total Value</span><strong id="port-total-value">${money(account.balance,account.invested+account.cash)}</strong><p>${account.valuedAt ? `Investments + cash · ${esc(account.valuedAt)}` : 'Recorded cost + cash · awaiting market prices'}</p></div><div class="summary-card"><span class="summary-label">Unrealized Gain</span><strong class="${account.gain === null ? '' : account.gain >= 0 ? 'ok' : 'flag'}">${money(account.gain,account.invested)}</strong><p>${gainNote}</p></div><div class="summary-card"><span class="summary-label">Active Positions</span><strong id="port-count">${count} ${count === 1 ? 'Asset' : 'Assets'}</strong><p>From your recorded purchases</p></div></div>`;
+  const history = latest ? panel('Performance / all dates',`<details><summary>View exact performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn-r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '';
+  return `<section id="view-portfolio"><div class="page-intro portfolio-intro"><div><h1 id="page-title">Your Portfolio</h1><p>Active holdings, purchase history and performance across your entire account.</p></div><a class="action-button primary" href="#month" data-new-position>${icon('add')}Add New Position</a></div>${summary}${state.errors.prices ? errorBox(state.errors.prices) : ''}${activePositionsTable(h,state.errors.prices ? null : state.prices)}<details class="portfolio-details"><summary>Purchase history & performance</summary><div class="detail-body">${purchaseLedger(h,'All purchases',account.values)}<div class="grid">${panel('Portfolio / benchmark',chart+comparisonNote)}${panel('Investment allocation',allocation)}</div>${positionsPanel()}${history}</div></details></section>`;
 }
 
 function drawChart() {
@@ -456,26 +471,60 @@ function purchaseFromFields(fields, existing) {
 }
 const CHATGPT_PURCHASE_INSTRUCTIONS = 'Read AGENTS.md in https://github.com/EpidemikGG/invest-dashboard using my connected GitHub account. Record the completed purchase I provide in data/holdings.json. Ask together for essential missing details. Preserve current purchases, check duplicates, validate the full ledger, commit with the current file SHA, and verify the saved purchase. Give me the commit and live dashboard links. If you cannot write to GitHub, tell me it has not been saved.\n\nMy completed purchase: ';
 function purchaseForm() {
-  const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   const unavailable = !!state.errors.holdings || !!state.localError;
-  return `<section class="panel purchase-panel" aria-labelledby="purchase-heading"><div class="section-head"><div><h2 id="purchase-heading">Add an investment</h2><p>Log an actual purchase to update your portfolio.</p></div>${tag('SAVED ON THIS DEVICE')}</div>
-    <details class="chatgpt-purchase"><summary>Add with ChatGPT · sync across devices</summary><div class="detail-body"><p>Tell ChatGPT what you bought and ask it to record the purchase using your GitHub connection. Include the ticker, date, amount, fill price or shares, fees and bucket. It will ask for missing details.</p><p class="local-note">Purchases recorded through GitHub are saved to this dashboard for all your devices. The ledger is public. The manual form below saves only in this browser.</p><label for="chatgpt-purchase-instructions">Instructions to paste into ChatGPT</label><textarea id="chatgpt-purchase-instructions" rows="5" readonly>${esc(CHATGPT_PURCHASE_INSTRUCTIONS)}</textarea><button type="button" class="action-button" id="copy-chatgpt-purchase">Copy ChatGPT instructions</button><p class="form-message" id="chatgpt-copy-message" role="status" aria-live="polite"></p></div></details>
-    <form id="purchase-form" class="purchase-form">
-      <label class="amount-field">Investment amount (USD)<input name="amount" type="number" min="0.000001" step="any" inputmode="decimal" required placeholder="300.00"><small>Total paid, including fees.</small></label>
-      <label>Ticker<input name="ticker" type="text" maxlength="30" required placeholder="e.g. MSFT" autocapitalize="characters" autocomplete="off"></label>
-      <label>Purchase date<input name="date" type="date" value="${today}" max="${today}" required></label>
-      <label>Bucket<select name="bucket"><option value="core">Core</option><option value="satellite">Satellite</option></select></label>
-      <label>Fill price per share (USD)<input name="price" type="number" min="0.000001" step="any" inputmode="decimal" required placeholder="Price you paid"></label>
-      <label>Actual shares (optional)<input name="shares" type="number" min="0.000000000001" step="any" inputmode="decimal" placeholder="Calculated if blank"><small>Leave blank to use amount ÷ price, assuming no fees.</small></label>
-      <label>ISIN (optional)<input name="isin" type="text" maxlength="40" placeholder="Security identifier" autocapitalize="characters" autocomplete="off"></label>
-      <div class="form-actions"><button class="action-button primary" type="submit" ${unavailable ? 'disabled' : ''}>Add investment</button></div>
-    </form>
-    <p class="local-note">Purchases are saved in this browser and update your dashboard immediately. They do not sync across devices. Download a backup before clearing browser data.</p>
-    <div class="form-actions"><button class="action-button" id="export-holdings" type="button" ${unavailable ? 'disabled' : ''}>Download holdings.json</button></div>
-    <p id="purchase-message" class="form-message" tabindex="-1" role="status" aria-live="polite">${esc(state.purchaseMessage || '')}</p>
-    ${state.localError ? '<p class="flag">Saved purchases could not be loaded. Browser storage may be unavailable or contain invalid data. Existing saved data has not been overwritten.</p>' : ''}
-    ${state.pendingPurchases?.length ? `<details><summary>Purchases saved on this device (${state.pendingPurchases.length})</summary><div class="detail-body">${state.pendingPurchases.map(r => `<div class="local-purchase"><span><strong>${text(r.purchase.ticker)}</strong> · ${esc(r.purchase.date)} · ${money(r.purchase.amount_usd, state.holdings.reduce((s, h) => s + h.amount_usd, 0))}</span><button class="action-button" type="button" data-remove-purchase="${esc(r.id)}" aria-label="Remove local purchase ${text(r.purchase.ticker)} dated ${esc(r.purchase.date)}">Remove</button></div>`).join('')}</div></details>` : ''}
-  </section>`;
+  return `<section class="purchase-panel" id="add-investment-card" aria-labelledby="purchase-heading"><div class="purchase-heading">${icon('add_circle','accent')}<div><h2 id="purchase-heading">Add an Investment</h2><p>Quick allocation on the go</p></div></div>
+  <form id="purchase-form" class="purchase-form">
+    <label for="form-ticker">Stock Ticker / Symbol<input id="form-ticker" name="ticker" required type="text" maxlength="30" placeholder="e.g. NVDA" autocapitalize="characters" autocomplete="off"></label>
+    <label for="form-qty">Number of Shares<input id="form-qty" name="shares" required type="number" min="0.000000000001" step="any" placeholder="e.g. 25" inputmode="decimal"></label>
+    <label for="form-price">Purchase Price ($)<input id="form-price" name="price" required type="number" min="0.000001" step="any" placeholder="e.g. 142.80" inputmode="decimal"></label>
+    <label for="form-date">Date<input id="form-date" name="date" required type="date" value="${today}" max="${today}"></label>
+    <label for="form-bucket">Bucket<select id="form-bucket" name="bucket" required><option value="">Choose core or satellite</option><option value="core">Core</option><option value="satellite">Satellite</option></select></label>
+    <details class="purchase-options"><summary>Amount paid, fees & security details</summary><div class="detail-body"><label>Original amount paid (USD)<input name="amount" type="number" min="0.000001" step="any" placeholder="Optional total including fees"><small>Overrides the estimated total; must cover shares × price.</small></label><label>Fees (USD)<input name="fees" type="number" min="0" step="any" value="0"><small>Zero unless you enter fees here.</small></label><label>ISIN (optional)<input name="isin" type="text" maxlength="40" placeholder="Security identifier" autocapitalize="characters" autocomplete="off"></label></div></details>
+    <div class="total-preview"><span>Estimated Total</span><output id="form-preview-total">${money(0,1)}</output></div>
+    <button class="action-button primary submit-investment" type="submit" ${unavailable ? 'disabled' : ''}>${icon('check')}Add Investment</button>
+  </form>
+  <div class="sync-note">${icon('sync','ok')}<span>Syncs directly with your <strong>Portfolio</strong> tab on this device.</span></div>
+  <p id="purchase-message" class="form-message" tabindex="-1" role="status" aria-live="polite">${esc(state.purchaseMessage || '')}</p>
+  ${state.localError ? '<p class="flag">Saved purchases could not be loaded. Existing browser data has not been overwritten.</p>' : ''}
+  <details class="chatgpt-purchase"><summary>Backup & sync across devices</summary><div class="detail-body"><p class="local-note">Manual entries are saved in this browser. Download a backup before clearing browser data. To sync all devices, replace data/holdings.json in GitHub with your export or ask ChatGPT to record your completed purchases.</p><button class="action-button" id="export-holdings" type="button" ${unavailable ? 'disabled' : ''}>Download holdings.json</button><label for="chatgpt-purchase-instructions">Instructions for ChatGPT</label><textarea id="chatgpt-purchase-instructions" rows="5" readonly>${esc(CHATGPT_PURCHASE_INSTRUCTIONS)}</textarea><button type="button" class="action-button" id="copy-chatgpt-purchase">Copy ChatGPT instructions</button><p class="form-message" id="chatgpt-copy-message" role="status"></p></div></details>
+  ${state.pendingPurchases?.length ? `<details><summary>Local purchases (${state.pendingPurchases.length})</summary><div class="detail-body">${state.pendingPurchases.map(r => `<div class="local-purchase"><span><strong>${text(r.purchase.ticker)}</strong> · ${esc(r.purchase.date)} · ${money(r.purchase.amount_usd,state.holdings.reduce((s,h) => s+h.amount_usd,0))}</span><button class="action-button" type="button" data-remove-purchase="${esc(r.id)}" aria-label="Remove local purchase ${text(r.purchase.ticker)}">Remove</button></div>`).join('')}</div></details>` : ''}</section>`;
+}
+function quickPurchaseFields(fields) {
+  const shares = Number(fields.shares), price = Number(fields.price), fees = Number(fields.fees || 0);
+  if (!positive(shares)) throw new Error('Enter the actual number of shares purchased.');
+  if (!positive(price)) throw new Error('Enter the actual purchase price per share.');
+  if (!nonnegative(fees)) throw new Error('Fees must be zero or greater.');
+  const total = shares*price+fees;
+  const amount = String(fields.amount || '').trim() ? Number(fields.amount) : total;
+  if (!positive(amount) || amount + .011 < total) throw new Error('Original amount paid must cover shares × price plus the stated fees.');
+  return {...fields,amount,shares,price};
+}
+function updatePreviewTotal() {
+  const form = $('#purchase-form');
+  if (!form) return;
+  try { const values = quickPurchaseFields(Object.fromEntries(new FormData(form))); $('#form-preview-total').textContent = money(values.amount,values.amount); }
+  catch { $('#form-preview-total').textContent = money(0,1); }
+}
+function bindQuickActions() {
+  document.querySelectorAll('[data-prefill-ticker]').forEach(button => button.addEventListener('click',() => {
+    const form = $('#purchase-form');
+    if (!form) return;
+    const ticker = button.dataset.prefillTicker, previous = state.holdings?.find(p => p.ticker === ticker);
+    form.elements.ticker.value = ticker;
+    form.elements.bucket.value = previous?.bucket || button.dataset.prefillBucket || '';
+    form.elements.isin.value = previous?.isin || button.dataset.prefillIsin || '';
+    // A research snapshot is not a fill. Never invent a purchase quantity or price.
+    form.elements.price.value = ''; form.elements.shares.value = ''; form.elements.amount.value = '';
+    form.elements.fees.value = '0';
+    $('#purchase-message').textContent = `${ticker} selected. Enter the shares and price from your actual purchase.`;
+    $('#purchase-message').dataset.error = 'false';
+    updatePreviewTotal();
+    $('#add-investment-card').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',block:'center'});
+    $('#form-qty').focus({preventScroll:true});
+  }));
+  document.querySelectorAll('[data-new-position]').forEach(link => link.addEventListener('click',() => {state.focusPurchase = true;}));
+  $('#dismiss-sync-alert')?.addEventListener('click',() => {state.purchaseMessage = ''; $('#dynamic-sync-alert').hidden = true;});
 }
 function bindPurchases() {
   const form = $('#purchase-form');
@@ -492,7 +541,7 @@ function bindPurchases() {
     event.preventDefault();
     if (state.errors.holdings || state.localError) return;
     try {
-      const fields = Object.fromEntries(new FormData(form));
+      const fields = quickPurchaseFields(Object.fromEntries(new FormData(form)));
       const purchase = purchaseFromFields(fields, state.holdings);
       const id = crypto.randomUUID();
       persistPurchases([...state.localPurchases, { id, purchase }], localStorage);
@@ -500,6 +549,7 @@ function bindPurchases() {
       render(); $('#purchase-message').focus();
     } catch (error) { report(error); }
   });
+  ['shares','price','amount','fees'].forEach(name => form.elements[name].addEventListener('input',updatePreviewTotal));
   form.elements.ticker.addEventListener('change', () => {
     const ticker = form.elements.ticker.value.trim().toUpperCase();
     form.elements.ticker.value = ticker;
@@ -559,21 +609,20 @@ function render() {
   state.chart?.destroy(); state.chart = null;
   state.positionCharts.forEach(chart => chart.destroy()); state.positionCharts = [];
   let route = location.hash.slice(1) || 'month';
-  if (['archive', 'framework'].includes(route)) { route = 'month'; history.replaceState(null, '', '#month'); }
-  const names = { month: 'This month', portfolio: 'Portfolio' };
-  $('#page-title').textContent = names[route] || 'Page not found';
+  if (['archive','framework','this-month'].includes(route)) {route='month';history.replaceState(null,'','#month');}
+  const names = {month:'This Month',portfolio:'Portfolio'};
   document.title = `${names[route] || 'Page not found'} / SYNTH.QUANT`;
-  $('#page-description').textContent = route === 'portfolio' ? 'Your entire account, purchase history and performance against the benchmark.' : 'Your monthly stock research, allocation plan and recorded investments.';
-  document.querySelectorAll('nav a').forEach(a => { if (a.hash === `#${route}`) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  if (!state.config) { $('#content').innerHTML = errorBox(state.errors.config || 'Settings unavailable.'); return; }
+  document.querySelectorAll('nav a').forEach(a => {if(a.hash === `#${route}`) a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  if (!state.config) {$('#content').innerHTML = errorBox(state.errors.config || 'Settings unavailable.');return;}
   try {
-    setupNotices();
-    let body;
-    if (route === 'month') body = monthPage();
-    else if (route === 'portfolio') body = portfolioPage();
-    else body = panel('Page not found', '<p>Choose a page in the navigation.</p>');
-    $('#content').innerHTML = body + (route === 'month' ? purchaseForm() : ''); bindSort(); bindPurchases(); bindResearch(); bindStockSelect(); drawChart(); drawPositionCharts();
-  } catch (e) { $('#content').innerHTML = errorBox(e); }
+    const toast = state.purchaseMessage ? `<div id="dynamic-sync-alert" class="sync-alert" role="status">${icon('check_circle','accent')}<span>${text(state.purchaseMessage)}</span><button type="button" id="dismiss-sync-alert" aria-label="Dismiss notification">${icon('close')}</button></div>` : '';
+    const body = route === 'month' ? monthPage() : route === 'portfolio' ? portfolioPage() : panel('Page not found','<p>Choose This Month or Portfolio above.</p>');
+    $('#content').innerHTML = toast + body;
+    bindSort();bindPurchases();bindResearch();bindStockSelect();bindQuickActions();drawChart();drawPositionCharts();
+    // Charts hidden in a details section resize once their canvas becomes visible.
+    document.querySelectorAll('.portfolio-details').forEach(detail => detail.addEventListener('toggle',() => { if(detail.open) {state.chart?.resize();state.positionCharts.forEach(chart => chart.resize());} }));
+    if (route === 'month' && state.focusPurchase) {state.focusPurchase=false;$('#form-ticker')?.focus();}
+  } catch(e) {$('#content').innerHTML=errorBox(e);}
 }
 async function start() {
   $('.skip').addEventListener('click', event => { event.preventDefault(); $('#content').focus(); });
@@ -582,7 +631,7 @@ async function start() {
   results.forEach((r, i) => {
     const key = keys[i];
     if (r.status === 'rejected') { state.errors[key] = r.reason; return; }
-    try { state[key] = key === 'config' ? validateConfig(r.value) : key === 'holdings' ? validateHoldings(r.value) : key === 'prices' ? validatePrices(r.value) : key === 'index' ? assertValid(r.value, { entries: [v => typeof v === 'string' && /^entries\/[A-Za-z0-9_-]+\.json$/.test(v)] }, FILES.index) : r.value; }
+    try { state[key] = key === 'config' ? validateConfig(r.value) : key === 'holdings' ? validateHoldings(r.value) : key === 'prices' ? validatePrices(r.value) : key === 'preview' ? validatePreview(r.value) : key === 'index' ? assertValid(r.value, { entries: [v => typeof v === 'string' && /^entries\/[A-Za-z0-9_-]+\.json$/.test(v)] }, FILES.index) : r.value; }
     catch (e) { state.errors[key] = e; }
   });
   state.publishedHoldings = state.holdings || [];
@@ -605,4 +654,4 @@ async function start() {
 }
 if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTML = errorBox(e); });
 // Enables deterministic arithmetic/validation tests without adding browser dependencies.
-if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases };
+if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases, quickPurchaseFields, validatePreview };

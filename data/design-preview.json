@@ -1,0 +1,122 @@
+{
+  "kind": "design_preview",
+  "source": "User-supplied code(2).html",
+  "notice": "Imported design examples. Prices, scores and claims are from the supplied HTML, are unverified, and are not current investment research.",
+  "stocks": [
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "category": "Tech / Semiconductor",
+      "price": 142.8,
+      "currency": "USD",
+      "sentiment": "Confident",
+      "score": 94,
+      "notes": [
+        {
+          "label": "Stocktwits",
+          "text": "89% Bullish sentiment with 12.4k messages/hr signaling strong sustained momentum."
+        },
+        {
+          "label": "Stocklake MCP",
+          "text": "Cross-verified +42M shares in dark pool institutional buy blocks."
+        },
+        {
+          "label": "Verified Sources & Filings",
+          "text": "SEC 13F cross-check shows net position accumulation by BlackRock & Citadel; consensus FY25 EPS revised upward +14.2%."
+        }
+      ]
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir Technologies",
+      "category": "Enterprise Software / AI",
+      "price": 64.15,
+      "currency": "USD",
+      "sentiment": "Confident",
+      "score": 91,
+      "notes": [
+        {
+          "label": "Stocktwits",
+          "text": "93% Bullish sentiment; sustained retail breakout chatter volume."
+        },
+        {
+          "label": "Stocklake MCP",
+          "text": "Trend velocity metric 9.8/10; large volume accumulation across institutional order books."
+        },
+        {
+          "label": "Verified Sources & Filings",
+          "text": "US Department of Defense contract awarded ($1.4B AIP pipeline verified via USASpending.gov); 18 new enterprise SaaS contract announcements validated."
+        }
+      ]
+    },
+    {
+      "ticker": "CRWD",
+      "name": "CrowdStrike Holdings",
+      "category": "Cybersecurity",
+      "price": 348.5,
+      "currency": "USD",
+      "sentiment": "Bullish",
+      "score": 84,
+      "notes": [
+        {
+          "label": "Stocktwits",
+          "text": "74% Bullish consolidation sentiment; positive narrative around security platform resilience."
+        },
+        {
+          "label": "Stocklake MCP",
+          "text": "Bullish options call flow concentrated at $360 strike expiring this quarter."
+        },
+        {
+          "label": "Verified Sources & Filings",
+          "text": "Gross customer retention reaffirmed at 97.4% in 10-Q filing; Morgan Stanley and Bank of America upgraded price targets to $380."
+        }
+      ]
+    },
+    {
+      "ticker": "SOFI",
+      "name": "SoFi Technologies",
+      "category": "Fintech",
+      "price": 16.4,
+      "currency": "USD",
+      "sentiment": "Bullish",
+      "score": 82,
+      "notes": [
+        {
+          "label": "Stocktwits",
+          "text": "81% Bullish sentiment with fast-growing retail engagement."
+        },
+        {
+          "label": "Stocklake MCP",
+          "text": "+18M volume surge with institutional buying detected at support levels."
+        },
+        {
+          "label": "Verified Sources & Filings",
+          "text": "Verified +680,000 new quarterly members in latest regulatory reporting; 90-day loan loss provisions decreased by 32 bps."
+        }
+      ]
+    },
+    {
+      "ticker": "TSLA",
+      "name": "Tesla Inc.",
+      "category": "Automotive / Robotics",
+      "price": 282.1,
+      "currency": "USD",
+      "sentiment": "Weak",
+      "score": 52,
+      "notes": [
+        {
+          "label": "Stocktwits",
+          "text": "Mixed/Bearish chatter (52% negative); heated debate over deliveries vs robotaxi timelines."
+        },
+        {
+          "label": "Stocklake MCP",
+          "text": "Elevated put hedging activity in short-term expiry chains; negative gamma imbalance."
+        },
+        {
+          "label": "Verified Sources & Filings",
+          "text": "Auto gross margin compressed to 14.6% in 10-Q filing; partially offset by Megapack energy storage revenues growing +38% YoY."
+        }
+      ]
+    }
+  ]
+}

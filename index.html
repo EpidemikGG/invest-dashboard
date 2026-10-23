@@ -1,33 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark light">
-  <meta name="description" content="Monthly investing research and purchase performance.">
-  <title>SYNTH.QUANT / This month</title>
-  <link rel="stylesheet" href="./styles.css?v=7">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Personal stock research and portfolio tracking.">
+  <title>SYNTH.QUANT // PORTFOLIO INTELLIGENCE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=8">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
-  <script defer src="./app.js?v=7"></script>
+  <script defer src="./app.js?v=8"></script>
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
-  <div class="workspace">
-    <div class="masthead">
-      <div class="brand" aria-label="Synth Quant investing dashboard">
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m3 25 8-10 7 5 10-14M22 6h6v6" stroke="currentColor" stroke-width="2"/><path d="M6 5v6M3 8h6" stroke="currentColor" stroke-width="1.5"/></svg>
-        <span>SYNTH<em>.QUANT</em></span>
-      </div>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand"><span class="material-symbols-outlined" aria-hidden="true">insights</span><span>SYNTH<span class="accent">.QUANT</span></span></div>
       <nav class="top-nav" aria-label="Main navigation">
-        <a href="#month"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 18 6-7 5 3 7-10M15 4h6v6" stroke="currentColor" stroke-width="1.7"/></svg>This month</a>
-        <a href="#portfolio"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v9h9M12 3a9 9 0 1 0 9 9M15 3.5V9h5.5" stroke="currentColor" stroke-width="1.7"/></svg>Portfolio</a>
+        <a id="nav-btn-this-month" href="#month"><span class="material-symbols-outlined" aria-hidden="true">auto_graph</span>This Month</a>
+        <a id="nav-btn-portfolio" href="#portfolio"><span class="material-symbols-outlined" aria-hidden="true">pie_chart</span>Portfolio</a>
       </nav>
     </div>
-    <header class="page-header"><div><p class="eyebrow">PERSONAL INVESTMENT INTELLIGENCE</p><h1 id="page-title">This month</h1><p id="page-description" class="page-description">Your monthly stock research, allocation plan and recorded investments.</p></div><span class="badge"><span class="dot" aria-hidden="true"></span>PERSONAL EDITION</span></header>
-    <div id="notices" aria-live="polite"></div>
-    <main id="content" tabindex="-1" aria-live="polite"><p class="panel">Loading your dashboard…</p></main>
-    <noscript><p class="error">Enable JavaScript to read the dashboard.</p></noscript>
-    <footer><span class="footer-brand">SYNTH.QUANT</span><span>AI-generated research. Not financial advice.</span></footer>
-  </div>
+  </header>
+  <main class="workspace" id="content" tabindex="-1"><p class="empty" role="status">Loading your dashboard…</p></main>
+  <noscript><p class="error">Enable JavaScript to read the dashboard.</p></noscript>
+  <footer class="site-footer"><div class="footer-inner"><div><strong>SYNTH.QUANT</strong><span>© 2026. All rights reserved.</span></div><p>AI-generated research. Not financial advice.</p></div><p class="footer-source">Research fields for Stocktwits, Stocklake MCP &amp; source filings. Live data feeds are not connected.</p></footer>
 </body>
 </html>

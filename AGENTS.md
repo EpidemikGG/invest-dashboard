@@ -31,4 +31,4 @@ If GitHub is disconnected or write access fails, explain that the purchase is NO
 
 Read MONTHLY_PROMPT.md for research runs. Research recommendations and sentiment scores never create holdings. Actual purchase reports never become stock recommendations automatically. Missing market histories must remain missing; logging a fill is not evidence of a market closing price.
 
-Keep the website plain HTML/CSS/JavaScript with no backend or build step. All fetched JSON stays under data/. Main navigation remains This month and Portfolio. Add an investment belongs only at the bottom of This month. Portfolio is a read-only history/performance view.
+Keep the website plain HTML/CSS/JavaScript with no backend or build step. All fetched JSON stays under data/. Main navigation remains This month and Portfolio. The user-approved HTML layout places Add an Investment in a right-hand panel on This Month (stacked on mobile). Portfolio is a read-only history/performance view with an Add New Position link back to that form. data/design-preview.json contains explicitly labelled, unverified design examples; never treat them as current research, market prices, or actual holdings.

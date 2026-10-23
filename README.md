@@ -2,14 +2,23 @@
 
 A static, mobile-friendly investing research dashboard. Upload the contents of this folder to a GitHub repository. There is no installation, build step, backend, API key or automatic trading. Chart.js 4.4.8 is the only external script.
 
+## Current UI: supplied HTML reference
+
+The UI follows `code(2).html`: fixed dark appearance, Space Grotesk/Geist typography, Material Symbols, rounded stock cards, conviction meters, a sticky investment panel, a dismissible save notification, and the portfolio summary/table. CSS is hand-written; no Tailwind runtime or build step is needed. Fonts and symbols load from Google Fonts; Chart.js loads from cdnjs. `DESIGN.md` documents the reference and deliberate data-integrity differences.
+
+`data/design-preview.json` contains the five **unverified example cards** copied from the supplied HTML (NVDA, PLTR, CRWD, SOFI, TSLA). They appear only when no research report exists for the current month. They are not real-time quotes, verified research, purchases, or portfolio data. A normal current-month entry automatically replaces them. The Add to Investment Form buttons select a ticker; users must supply their actual execution price and shares. The source HTML's arbitrary 20-share default is intentionally not used.
+
+The real portfolio always reads `data/holdings.json` plus locally saved purchases. Mockup balances and positions are never imported. Stocktwits/Stocklake/SEC content is not fetched live. Charts need actual dated records in `data/prices.json` and a configured benchmark. The source layout's invalid closing tags are corrected so portfolio elements stay inside their own route.
+
 ## Files and setup
 
 - `index.html`, `styles.css`, `app.js`: interface and calculations.
 - `FRAMEWORK.md`: rules extracted verbatim from your supplied document.
 - `data/config.json`: settings extracted verbatim from your document. The config lives under data so every JSON request stays there.
-- `data/index.json`: entry paths, newest first. The first listed entry is This month, even if it is invalid; the app never silently substitutes an older issue.
+- `data/index.json`: entry paths, newest first. This Month selects the entry for the current Europe/Bucharest calendar month. A missing report displays explicitly labelled design-preview cards; an invalid report displays its validation error.
 - `data/entries/example.json`: invented demonstration, not investment advice. Dates and enum values retain schema-valid forms; descriptive text starts with EXAMPLE. Remove its index line when your first real issue is ready.
 - `data/holdings.json`: actual purchases only, initially empty.
+- `data/design-preview.json`: separately validated, labelled examples from the supplied UI.
 - `data/prices.json`: dated USD price histories, initially empty.
 - `.nojekyll`: empty file; retain it at the repository root.
 
@@ -22,7 +31,7 @@ The bracketed benchmark, investor and broker fields in your original config are 
 3. Commit the files to `main`. If `.nojekyll` was omitted by your uploader, use Add file → Create new file to create an empty file with that exact name.
 4. Open Settings → Pages. Under Build and deployment select Deploy from a branch, then `main` and `/(root)`. Save.
 5. Wait for the Pages deployment to finish. Open the URL shown in Settings → Pages, normally `https://YOUR-USERNAME.github.io/invest-dashboard/`.
-6. Check the two large navigation buttons: This month and Portfolio. The example warning and incomplete-setup notice are expected.
+6. Check the two large navigation buttons: This month and Portfolio. Check both pages and the labelled example cards before adding a real monthly report.
 
 GitHub's instructions: https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
 
@@ -49,7 +58,7 @@ Entry names may contain letters, digits, hyphens or underscores and must be dire
 
 ## Add investments directly on the dashboard
 
-Use the Add an investment form at the bottom of This month. Enter the USD amount paid, ticker, purchase date, bucket and USD fill price. Optionally enter actual shares (recommended when fees apply) and an ISIN. Without a share quantity, shares are calculated as amount divided by fill price, assuming no fees.
+Use the Add an Investment panel on the right of This Month (below the stock list on mobile). Enter the ticker, actual share quantity, USD execution price, purchase date and bucket. The estimated total is shares × price plus the optional fee amount. Expand Amount paid, fees & security details to enter the original total outlay or an ISIN. Fees default explicitly to zero; a total outlay must cover the execution cost and stated fees.
 
 New purchases immediately update portfolio totals and are stored locally in this browser under `invest-dashboard.purchases.v1`. They survive refreshes but do not sync to other devices or write to GitHub. Clearing browser data removes them. Amount inputs are visible while you fill them in; saved summaries follow the percentage-only display setting.
 
@@ -85,7 +94,7 @@ This is DISPLAY PRIVACY ONLY. JSON and Markdown files remain downloadable from a
 
 Open the site through GitHub Pages or an HTTP server, not by double-clicking index.html: browsers commonly block local-file fetches. If Python is available, run `python -m http.server 8000` from this folder, then visit `http://localhost:8000/`. Python is only an optional preview tool, not a site dependency.
 
-If a file fails, check its exact capitalization, path and JSON syntax. A config error blocks rendering to avoid accidentally revealing amounts. An invalid issue does not hide other valid archive issues. Price errors leave the purchase ledger visible. If cdnjs is blocked, the chart has a readable fallback and the exact performance table remains usable.
+If a file fails, check its exact capitalization, path and JSON syntax. A config error blocks rendering to avoid accidentally revealing amounts. An invalid current issue displays a readable error instead of substituting preview recommendations. Price errors leave the purchase ledger visible. If cdnjs is blocked, the chart has a readable fallback and the exact performance table remains usable.
 
 ## Fetch path check
 
@@ -100,15 +109,15 @@ All requests are relative to the site directory, so the GitHub Pages project sub
 
 ## Monthly activity and entire account
 
-This month shows purchases in the current calendar month in Europe/Bucharest, its budget, and only a research issue whose month matches that period. Portfolio shows all purchase lots and the full recorded account balance in USD. Amount display is enabled in data/config.json.
+This Month shows stock cards in the supplied HTML layout, with monthly allocation and purchases in an expandable section. A saved research issue must match the current Europe/Bucharest calendar month. Portfolio shows all purchase lots and the full recorded account balance in USD. Amount display is enabled in data/config.json.
 
-Account balance equals recorded investment value plus the optional uninvested cash balance saved in this browser. Investment prices use the most recent date shared by every holding, without depending on a benchmark. When there is no complete price snapshot, investment value falls back to purchase outlay and is labelled recorded cost; gain/loss is unavailable. The cash field is a manual snapshot: update it after deposits, withdrawals and trades. Purchases do not deduct cash automatically. Cash is excluded from investment allocation and performance returns. It is not included in the holdings.json export.
+Account balance equals recorded investment value plus the optional uninvested cash balance saved in this browser. Investment prices use the most recent date shared by every holding, without depending on a benchmark. When there is no complete price snapshot, investment value falls back to purchase outlay and is labelled recorded cost; gain/loss is unavailable. Any legacy cash balance saved in the browser remains a manual snapshot; this layout has no cash editor. Purchases do not deduct cash automatically. Cash is excluded from investment allocation and performance returns. It is not included in the holdings.json export.
 
-The Add an investment form appears only at the bottom of This month. Portfolio is a read-only history and performance view. The setup and percentage-view notices have been removed.
+The Add an Investment form appears only in the right-hand panel of This Month, stacked below the stock list on mobile. Portfolio is a read-only history and performance view. The setup and percentage-view notices have been removed.
 
 ## Monthly research reviews
 
-Research is displayed above the monthly allocation and has three accessible tabs: Stock reviews, Market & decisions, and Prompt & method. Use MONTHLY_PROMPT.md to request a monthly ChatGPT research run. The dashboard reads its saved report; it does not call ChatGPT.
+Saved research is displayed above the expandable monthly allocation and has three accessible tabs: Stock reviews, Market & decisions, and Prompt & method. Use MONTHLY_PROMPT.md to request a monthly ChatGPT research run. The dashboard reads its saved report; it does not call ChatGPT.
 
 The original entry schema remains valid. New optional top-level fields are research_prompt and research_summary (strings). A pick may additionally include sentiment_score (integer 0–100 or null) and sentiment_reason (string). Invalid supplied values fail validation. The UI maps 80–100 to Strong buy, 60–79 to Buy, 40–59 to Neutral, 20–39 to Weak buy, and 0–19 to Avoid. A missing/null score shows Not scored. Confidence is separate; no score is guessed from it. Share prices are dated research snapshots in each pick’s stated currency.
 
