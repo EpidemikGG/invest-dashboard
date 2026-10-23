@@ -1,3 +1,9 @@
+## Stocktwits snapshots and portfolio controls
+
+Portfolio now reads data/quotes.json separately from daily closing histories. ChatGPT refreshes the published holdings’ Stocktwits quotes hourly through its connected tools. The site reloads snapshots on open, on the Reload latest snapshot button, and every five minutes while visible. This is an hourly snapshot feed, not a real-time stream; Stocktwits quotes may be delayed. Each price displays the provider timestamp and quotes older than two hours are marked Older quote. A quote after the current time by more than five minutes is rejected. Unsupported symbols show missing prices. VWCE is currently unsupported by Stocktwits and no USD conversion is guessed. Current account valuation uses snapshots only when all holdings have usable quotes; otherwise the dated-history or recorded-cost fallback remains explicitly labelled. Intraday snapshots are never used as historical daily closes.
+
+Edit and Remove in Active Positions operate on individual purchase records or whole positions. Edits validate dates, costs, shares and bucket consistency. They do not execute broker trades. Overrides are saved locally in this browser; Undo last change and Restore published records reverse them. Export updated holdings and ask ChatGPT to replace the published ledger to sync devices. The price automation can only read published holdings. Purchase prices remain actual historical inputs, distinct from market quotes.
+
 # Invest Dashboard
 
 A static, mobile-friendly investing research dashboard. Upload the contents of this folder to a GitHub repository. There is no installation, build step, backend, API key or automatic trading. Chart.js 4.4.8 is the only external script.

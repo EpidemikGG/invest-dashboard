@@ -1,0 +1,29 @@
+{
+  "fetched_at": "2026-10-23T17:13:00.300Z",
+  "quotes": {
+    "MSFT": {
+      "price": 524.64,
+      "price_time": "2026-10-23T13:10:48-04:00",
+      "currency": "USD",
+      "source": "Stocktwits",
+      "exchange": "NASDAQ"
+    },
+    "BRK.B": {
+      "price": 541.76,
+      "price_time": "2026-10-23T13:10:31-04:00",
+      "currency": "USD",
+      "source": "Stocktwits",
+      "exchange": "NYSE"
+    },
+    "GOOGL": {
+      "price": 322.42,
+      "price_time": "2026-10-23T13:10:56-04:00",
+      "currency": "USD",
+      "source": "Stocktwits",
+      "exchange": "NASDAQ"
+    }
+  },
+  "errors": {
+    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
+  }
+}

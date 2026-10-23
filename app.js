@@ -1,7 +1,7 @@
 'use strict';
 
 // All fetched JSON is local to ./data/. Personal purchase additions use browser storage.
-const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json', preview: './data/design-preview.json' };
+const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json', preview: './data/design-preview.json', quotes: './data/quotes.json' };
 const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '', cashBalance: 0, cashMessage: '', researchTab: 'stocks', selectedStock: null, positionCharts: [] };
 const $ = s => document.querySelector(s);
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -115,7 +115,7 @@ function setupNotices() {
   const notes = [];
   if (state.prices?.asOf) {
     const days = Math.floor((Date.now() - Date.parse(state.prices.asOf)) / 86400000);
-    if (days > 7) notes.push(`Price snapshot is ${days} days old (${state.prices.asOf}). This site never fetches live prices.`);
+    if (days > 7) notes.push(`Price snapshot is ${days} days old (${state.prices.asOf}). Historical closing prices have not been updated.`);
     if (days < 0) notes.push('Price snapshot is dated in the future. Check data/prices.json.');
   }
   $('#notices').innerHTML = notes.map(n => `<div class="notice">${text(n)}</div>`).join('');
@@ -386,14 +386,16 @@ function activePositionsTable(holdings, prices) {
   const totalCost = positions.reduce((s,p) => s+p.invested,0);
   const rows = positions.map(p => {
     const shares = p.lots.reduce((s,h) => s+h.shares,0), avg = p.invested/shares;
+    const quote = quoteFor(p.ticker, p.lots);
+    if (quote) p.latest = {close:quote.price, value:shares*quote.price, date:quote.price_time};
     const first = p.lots.reduce((d,h) => h.date < d ? h.date : d,p.lots[0].date);
-    return `<tr><td class="ticker-cell">${text(p.ticker)}</td>${privateMode() ? '' : `<td>${shares.toLocaleString('en-US',{maximumFractionDigits:12})}</td><td>${money(avg)}<small class="price-basis">Average cost / share</small></td><td>${p.latest ? money(p.latest.close) : '—'}<small class="price-basis">${p.latest?.date || 'Awaiting prices'}</small></td>`}<td>${money(p.latest?.value ?? p.invested,totalCost)}${p.latest ? '' : '<small class="price-basis">Recorded cost</small>'}</td><td>${esc(first)}</td></tr>`;
+    return `<tr><td class="ticker-cell">${text(p.ticker)}</td>${privateMode() ? '' : `<td>${shares.toLocaleString('en-US',{maximumFractionDigits:12})}</td><td>${money(avg)}<small class="price-basis">Average cost / share</small></td><td>${p.latest ? money(p.latest.close) : '—'}<small class="price-basis">${quote ? quoteLabel(quote) : p.latest?.date || 'Awaiting prices'}</small></td>`}<td>${money(p.latest?.value ?? p.invested,totalCost)}${p.latest ? '' : '<small class="price-basis">Recorded cost</small>'}</td><td>${esc(first)}</td><td><button class="action-button" data-manage-position="${esc(p.ticker)}">Edit</button> <button class="action-button danger" data-remove-position="${esc(p.ticker)}">Remove</button></td></tr>`;
   }).join('');
-  return `<section class="panel holdings-panel"><h2>Active Positions</h2><div class="scroll" role="region" aria-label="Active positions table" tabindex="0"><table id="holdings-table"><thead><tr><th>Symbol</th>${privateMode() ? '' : '<th>Shares</th><th>Purchase Price</th><th>Current Price</th>'}<th>${privateMode() ? 'Contribution %' : 'Position Value'}</th><th>Date Added</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  return `<section class="panel holdings-panel"><h2>Active Positions</h2><div class="scroll" role="region" aria-label="Active positions table" tabindex="0"><table id="holdings-table"><thead><tr><th>Symbol</th>${privateMode() ? '' : '<th>Shares</th><th>Purchase Price</th><th>Current Price</th>'}<th>${privateMode() ? 'Contribution %' : 'Position Value'}</th><th>Date Added</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
 }
 function portfolioPage() {
   if (state.errors.holdings) return errorBox(state.errors.holdings);
-  const h = state.holdings, account = accountSummary(h,state.errors.prices ? null : state.prices,state.cashBalance);
+  const h = state.holdings, account = quotedAccount(h,state.errors.prices ? null : state.prices,state.cashBalance);
   const count = new Set(h.map(p => p.ticker)).size;
   let result = null, comparisonNote = '';
   if (!state.config.benchmark.ticker.includes('[')) {
@@ -407,7 +409,7 @@ function portfolioPage() {
   const gainNote = account.gain === null ? 'Price history needed to calculate performance' : `${pct(account.gain/account.invested*100)} cumulative price return`;
   const summary = `<div class="portfolio-summary"><div class="summary-card"><span class="summary-label">Total Value</span><strong id="port-total-value">${money(account.balance,account.invested+account.cash)}</strong><p>${account.valuedAt ? `Investments + cash · ${esc(account.valuedAt)}` : 'Recorded cost + cash · awaiting market prices'}</p></div><div class="summary-card"><span class="summary-label">Unrealized Gain</span><strong class="${account.gain === null ? '' : account.gain >= 0 ? 'ok' : 'flag'}">${money(account.gain,account.invested)}</strong><p>${gainNote}</p></div><div class="summary-card"><span class="summary-label">Active Positions</span><strong id="port-count">${count} ${count === 1 ? 'Asset' : 'Assets'}</strong><p>From your recorded purchases</p></div></div>`;
   const history = latest ? panel('Performance / all dates',`<details><summary>View exact performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn-r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '';
-  return `<section id="view-portfolio"><div class="page-intro portfolio-intro"><div><h1 id="page-title">Your Portfolio</h1><p>Active holdings, purchase history and performance across your entire account.</p></div><a class="action-button primary" href="#month" data-new-position>${icon('add')}Add New Position</a></div>${summary}${state.errors.prices ? errorBox(state.errors.prices) : ''}${activePositionsTable(h,state.errors.prices ? null : state.prices)}<details class="portfolio-details"><summary>Purchase history & performance</summary><div class="detail-body">${purchaseLedger(h,'All purchases',account.values)}<div class="grid">${panel('Portfolio / benchmark',chart+comparisonNote)}${panel('Investment allocation',allocation)}</div>${positionsPanel()}${history}</div></details></section>`;
+  return `<section id="view-portfolio"><div class="page-intro portfolio-intro"><div><h1 id="page-title">Your Portfolio</h1><p>Active holdings, purchase history and performance across your entire account.</p></div><a class="action-button primary" href="#month" data-new-position>${icon('add')}Add New Position</a></div>${quoteStatus()}${summary}${managementPanel()}${state.errors.prices ? errorBox(state.errors.prices) : ''}${activePositionsTable(h,state.errors.prices ? null : state.prices)}<details class="portfolio-details"><summary>Purchase history & performance</summary><div class="detail-body">${purchaseLedger(h,'All purchases',account.values)}<div class="grid">${panel('Portfolio / benchmark',chart+comparisonNote)}${panel('Investment allocation',allocation)}</div>${positionsPanel()}${history}</div></details></section>`;
 }
 
 function drawChart() {
@@ -446,12 +448,12 @@ function loadLocalPurchases(storage) {
 function refreshHoldings() {
   if (state.errors.holdings) return;
   const merged = mergePurchases(state.publishedHoldings, state.localPurchases);
-  state.holdings = validateHoldings(merged.holdings);
+  state.holdings = applyOverrides(merged.holdings, state.overrides || {});
   state.pendingPurchases = merged.pending;
 }
 function persistPurchases(rows, storage) {
   // Write before changing in-memory totals so a storage failure cannot look saved.
-  validateHoldings(mergePurchases(state.publishedHoldings, rows).holdings);
+  applyOverrides(mergePurchases(state.publishedHoldings, rows).holdings, state.overrides || {});
   storage.setItem(PURCHASE_KEY, JSON.stringify(rows));
   state.localPurchases = rows;
   refreshHoldings();
@@ -619,7 +621,7 @@ function render() {
     const toast = state.purchaseMessage ? `<div id="dynamic-sync-alert" class="sync-alert" role="status">${icon('check_circle','accent')}<span>${text(state.purchaseMessage)}</span><button type="button" id="dismiss-sync-alert" aria-label="Dismiss notification">${icon('close')}</button></div>` : '';
     const body = route === 'month' ? monthPage() : route === 'portfolio' ? portfolioPage() : panel('Page not found','<p>Choose This Month or Portfolio above.</p>');
     $('#content').innerHTML = toast + body;
-    bindSort();bindPurchases();bindResearch();bindStockSelect();bindQuickActions();drawChart();drawPositionCharts();
+    bindPortfolioManagement();bindSort();bindPurchases();bindResearch();bindStockSelect();bindQuickActions();drawChart();drawPositionCharts();
     // Charts hidden in a details section resize once their canvas becomes visible.
     document.querySelectorAll('.portfolio-details').forEach(detail => detail.addEventListener('toggle',() => { if(detail.open) {state.chart?.resize();state.positionCharts.forEach(chart => chart.resize());} }));
     if (route === 'month' && state.focusPurchase) {state.focusPurchase=false;$('#form-ticker')?.focus();}
@@ -632,10 +634,11 @@ async function start() {
   results.forEach((r, i) => {
     const key = keys[i];
     if (r.status === 'rejected') { state.errors[key] = r.reason; return; }
-    try { state[key] = key === 'config' ? validateConfig(r.value) : key === 'holdings' ? validateHoldings(r.value) : key === 'prices' ? validatePrices(r.value) : key === 'preview' ? validatePreview(r.value) : key === 'index' ? assertValid(r.value, { entries: [v => typeof v === 'string' && /^entries\/[A-Za-z0-9_-]+\.json$/.test(v)] }, FILES.index) : r.value; }
+    try { state[key] = key === 'config' ? validateConfig(r.value) : key === 'holdings' ? validateHoldings(r.value) : key === 'prices' ? validatePrices(r.value) : key === 'quotes' ? validateQuotes(r.value) : key === 'preview' ? validatePreview(r.value) : key === 'index' ? assertValid(r.value, { entries: [v => typeof v === 'string' && /^entries\/[A-Za-z0-9_-]+\.json$/.test(v)] }, FILES.index) : r.value; }
     catch (e) { state.errors[key] = e; }
   });
   state.publishedHoldings = state.holdings || [];
+  try { const raw = localStorage.getItem(OVERRIDE_KEY); state.overrides = raw ? JSON.parse(raw) : {}; if (!object(state.overrides)) throw new Error('Invalid portfolio changes'); } catch(error) {state.localError=error; state.overrides={};}
   try { state.localPurchases = loadLocalPurchases(localStorage); refreshHoldings(); }
   catch (error) { state.localError = error; }
   try {
@@ -651,7 +654,106 @@ async function start() {
   }
   render();
   window.addEventListener('hashchange', render);
+  setInterval(async () => {
+    if (document.hidden || location.hash !== '#portfolio' || state.editTicker || document.activeElement?.closest('form')) return;
+    try {state.quotes=validateQuotes(await read(FILES.quotes));delete state.errors.quotes;render();} catch(error) {state.errors.quotes=error;render();}
+  }, 300000);
 }
 if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTML = errorBox(e); });
 // Enables deterministic arithmetic/validation tests without adding browser dependencies.
-if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases, quickPurchaseFields, validatePreview };
+if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases, quickPurchaseFields, validatePreview, applyOverrides, validateQuotes, quoteFor, quotedAccount, state };
+
+
+// Stocktwits snapshots are separate from historical closes and purchase fills.
+const OVERRIDE_KEY = 'invest-dashboard.overrides.v1';
+function validateQuotes(value) {
+  if (!object(value) || !object(value.quotes)) throw new Error('Invalid quote snapshot.');
+  for (const [ticker,q] of Object.entries(value.quotes)) {
+    if (!object(q) || !positive(q.price) || q.currency !== 'USD' || q.source !== 'Stocktwits' || !Number.isFinite(Date.parse(q.price_time)) || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(q.price_time)) throw new Error(`Invalid USD quote for ${ticker}.`);
+  }
+  return value;
+}
+function quoteFor(ticker, lots = []) {
+  const q = state.quotes?.quotes?.[ticker];
+  if (!q || Date.parse(q.price_time) > Date.now()+300000) return null;
+  const quoteDate = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(q.price_time));
+  if (lots.some(h => h.date > quoteDate)) return null;
+  return q;
+}
+function quoteLabel(q) {
+  const age = Date.now()-Date.parse(q.price_time);
+  return `${age > 7200000 ? 'Older quote · ' : ''}Stocktwits · ${esc(new Date(q.price_time).toLocaleString())}`;
+}
+function quotedAccount(holdings, prices, cash = 0) {
+  const base = accountSummary(holdings, prices, cash);
+  if (!holdings.length || !holdings.every(h => quoteFor(h.ticker, [h]))) return base;
+  const values = holdings.map(h => h.shares * quoteFor(h.ticker,[h]).price);
+  const value = values.reduce((a,b)=>a+b,0);
+  return {...base, values, investmentsValue:value, balance:value+cash, gain:value-base.invested, valuedAt:'Stocktwits snapshots (individual timestamps below)'};
+}
+function lotKeys(rows) {
+  const counts = new Map();
+  return rows.map(h => {
+    const key = h.id ? `id:${h.id}` : `lot:${purchaseKey(h)}`;
+    const n = counts.get(key)||0; counts.set(key,n+1);
+    return `${key}:${n}`;
+  });
+}
+function applyOverrides(rows, overrides) {
+  if (!object(overrides)) throw new Error('Invalid portfolio changes.');
+  const keys = lotKeys(rows);
+  return validateHoldings(rows.flatMap((h,i) => {
+    if (!Object.hasOwn(overrides,keys[i])) return [h];
+    return overrides[keys[i]] === null ? [] : [overrides[keys[i]]];
+  }));
+}
+function baseLots() {return mergePurchases(state.publishedHoldings,state.localPurchases).holdings;}
+function saveOverrides(next) {
+  applyOverrides(baseLots(),next);
+  localStorage.setItem(OVERRIDE_KEY,JSON.stringify(next));
+  state.undoOverrides = state.overrides || {};
+  state.overrides=next; refreshHoldings();
+}
+function quoteStatus() {
+  const missing = [...new Set(state.holdings.map(h=>h.ticker))].filter(t=>!quoteFor(t,state.holdings.filter(h=>h.ticker===t)));
+  return panel('Market prices', `<p class="meta">Stocktwits snapshots refresh hourly through ChatGPT. Quotes may be delayed; each price shows its provider timestamp. Historical charts use separately saved closing prices.</p>${missing.length ? `<p class="flag">No usable Stocktwits USD quote: ${text(missing.join(', '))}. A complete current account value is unavailable; totals use dated closes or recorded cost as labelled.</p>` : ''}${state.errors.quotes ? '<p class="flag">Price feed unavailable. Previous historical records remain available.</p>' : ''}<button class="action-button" id="refresh-quotes">Reload latest snapshot</button><p id="quotes-message" role="status">${text(state.quoteMessage||'')}</p>`);
+}
+function managementPanel() {
+  const keys=lotKeys(baseLots());
+  const rows=baseLots().map((h,i)=>({key:keys[i],lot:Object.hasOwn(state.overrides||{},keys[i]) ? state.overrides[keys[i]] : h})).filter(r=>r.lot && r.lot.ticker===state.editTicker);
+  return panel('Manage portfolio', `<p class="meta">Edits and removals save on this device. Removing a position removes its recorded purchases from this view; it does not sell shares. Export the updated ledger to sync it through GitHub.</p><div class="form-actions"><button class="action-button" id="portfolio-export">Export updated holdings</button><button class="action-button" id="portfolio-undo" ${state.undoOverrides ? '' : 'disabled'}>Undo last change</button><button class="action-button" id="portfolio-reset" ${Object.keys(state.overrides||{}).length ? '' : 'disabled'}>Restore published records</button></div><p class="form-message" id="portfolio-message" role="status">${text(state.managementMessage||'')}</p>${state.localError ? '<p class="flag">Saved browser records could not be loaded. Management is disabled to preserve your data.</p>' : ''}${rows.map(({key,lot:h})=>`<form class="lot-editor purchase-form" data-edit-lot="${esc(key)}"><h3>${text(h.ticker)} · purchase ${esc(h.date)}</h3><label>Ticker<input name="ticker" required value="${esc(h.ticker)}" pattern="[A-Za-z0-9.=_^:-]{1,30}"></label><label>Date<input name="date" type="date" required value="${esc(h.date)}"></label><label>Shares<input name="shares" type="number" step="any" min="0.000000000001" required value="${h.shares}"></label><label>Original total paid (USD, including fees)<input name="amount_usd" type="number" step="any" min="0.000000000001" required value="${h.amount_usd}"></label><label>Recorded purchase price per share (USD)<input name="price" type="number" step="any" min="0.000000000001" required value="${h.price}"><small>${h.price_basis==='average_cost_per_reported_share' ? 'Currently an effective average cost, not a verified execution fill.' : 'Enter your actual execution price.'} Current market quotes never overwrite this field.</small></label><label>Bucket<select name="bucket"><option value="core" ${h.bucket==='core'?'selected':''}>Core</option><option value="satellite" ${h.bucket==='satellite'?'selected':''}>Satellite</option></select></label><button class="action-button primary" type="submit">Save purchase changes</button><button class="action-button danger" type="button" data-remove-lot="${esc(key)}">Remove this purchase</button></form>`).join('')}`);
+}
+function bindPortfolioManagement() {
+  const report=e=>{const el=$('#portfolio-message');if(el) el.textContent=e.message;};
+  const protect=fn=>()=>{try {if(state.localError) throw new Error('Resolve unreadable browser records before editing.'); fn();}catch(e){report(e);}};
+  document.querySelectorAll('[data-manage-position]').forEach(b=>b.addEventListener('click',()=>{state.editTicker=b.dataset.managePosition;render();$('.lot-editor input')?.focus();}));
+  document.querySelectorAll('[data-remove-position]').forEach(b=>b.addEventListener('click',protect(()=>{
+    const ticker=b.dataset.removePosition;
+    const next={...(state.overrides||{})}, lots=baseLots(), keys=lotKeys(lots);
+    lots.forEach((h,i)=>{const current=Object.hasOwn(next,keys[i])?next[keys[i]]:h;if(current?.ticker===ticker) next[keys[i]]=null;});
+    saveOverrides(next);state.editTicker=null;state.managementMessage=`${ticker} removed on this device. Undo is available.`;render();
+  })));
+  document.querySelectorAll('[data-remove-lot]').forEach(b=>b.addEventListener('click',protect(()=>{saveOverrides({...state.overrides,[b.dataset.removeLot]:null});state.managementMessage='Purchase removed on this device.';render();})));
+  document.querySelectorAll('[data-edit-lot]').forEach(form=>form.addEventListener('submit',event=>{
+    event.preventDefault();
+    protect(()=>{
+      const key=form.dataset.editLot,lots=baseLots(),old=lots[lotKeys(lots).indexOf(key)],current=state.overrides?.[key]||old;
+      const fields=Object.fromEntries(new FormData(form)),ticker=fields.ticker.trim().toUpperCase();
+      if(!/^[A-Z0-9][A-Z0-9.=_^:-]{0,29}$/.test(ticker)) throw new Error('Enter a valid ticker.');
+      const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Bucharest',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      if(!date(fields.date)||fields.date>today) throw new Error('Enter a valid purchase date, not in the future.');
+      const updated={...current,...fields,ticker,shares:Number(fields.shares),price:Number(fields.price),amount_usd:Number(fields.amount_usd)};
+      if(ticker!==current.ticker) updated.isin='';
+      if(updated.price!==current.price){updated.price_basis='user_reported_execution';updated.execution_price_usd=updated.price;updated.fees_usd=null;}
+      saveOverrides({...state.overrides,[key]:updated});state.editTicker=ticker;state.managementMessage='Purchase updated on this device. Export to sync across devices.';render();
+    })();
+  }));
+  $('#portfolio-undo')?.addEventListener('click',protect(()=>{const previous=state.undoOverrides;saveOverrides(previous);state.undoOverrides=null;state.managementMessage='Last change undone.';render();}));
+  $('#portfolio-reset')?.addEventListener('click',protect(()=>{saveOverrides({});state.managementMessage='Published records restored. Local additions are retained.';render();}));
+  $('#portfolio-export')?.addEventListener('click',protect(()=>{const blob=new Blob([JSON.stringify(state.holdings,null,2)+'\n'],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='holdings.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}));
+  $('#refresh-quotes')?.addEventListener('click',async()=>{
+    const button=$('#refresh-quotes');button.disabled=true;
+    try {state.quotes=validateQuotes(await read(FILES.quotes));delete state.errors.quotes;state.quoteMessage='Latest published snapshot loaded. Provider timestamps are shown below.';render();}
+    catch(e){state.quoteMessage='Unable to reload prices. Try again shortly.';render();}
+  });
+}
