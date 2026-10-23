@@ -1,3 +1,7 @@
+## Portfolio navigation and gain/loss bars
+
+Modify and Remove sit immediately beside each stock symbol. Back to stocks and Cancel discard unsaved form changes and return focus to the position list. Saving or removing a purchase closes the editor and returns to the list. Each symbol shows a green/red diverging bar, percentage return on actual outlay and USD gain/loss when amounts are visible. The center line is break-even; the bar uses a ±10% scale, expanding for moves beyond that range. These bars show a single valuation, not a historical price trend. Missing prices display Awaiting market price.
+
 ## Stocktwits snapshots and portfolio controls
 
 Portfolio now reads data/quotes.json separately from daily closing histories. ChatGPT refreshes the published holdings’ Stocktwits quotes hourly through its connected tools. The site reloads snapshots on open, on the Reload latest snapshot button, and every five minutes while visible. This is an hourly snapshot feed, not a real-time stream; Stocktwits quotes may be delayed. Each price displays the provider timestamp and quotes older than two hours are marked Older quote. A quote after the current time by more than five minutes is rejected. Unsupported symbols show missing prices. VWCE is currently unsupported by Stocktwits and no USD conversion is guessed. Current account valuation uses snapshots only when all holdings have usable quotes; otherwise the dated-history or recorded-cost fallback remains explicitly labelled. Intraday snapshots are never used as historical daily closes.
