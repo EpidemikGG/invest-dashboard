@@ -7,6 +7,10 @@
     "required": ["date", "ticker", "isin", "bucket", "amount_usd", "price", "shares"],
     "properties": {
       "id": {"type": "string", "minLength": 1},
+      "price_basis": {"enum": ["execution", "average_cost_per_reported_share"]},
+      "execution_price_usd": {"type": ["number", "null"], "exclusiveMinimum": 0},
+      "fees_usd": {"type": ["number", "null"], "minimum": 0},
+      "note": {"type": "string"},
       "date": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
       "ticker": {"type": "string", "minLength": 1},
       "isin": {"type": "string"},
