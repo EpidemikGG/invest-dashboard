@@ -2,7 +2,7 @@
 
 // All fetched JSON is local to ./data/. Personal purchase additions use browser storage.
 const FILES = { config: './data/config.json', index: './data/index.json', holdings: './data/holdings.json', prices: './data/prices.json' };
-const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '' };
+const state = { config: null, entries: [], errors: {}, chart: null, localPurchases: [], pendingPurchases: [], publishedHoldings: [], purchaseMessage: '', cashBalance: 0, cashMessage: '' };
 const $ = s => document.querySelector(s);
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const number = v => typeof v === 'number' && Number.isFinite(v);
@@ -106,9 +106,6 @@ function validateHoldings(h) {
 }
 function setupNotices() {
   const notes = [];
-  const unfinished = v => typeof v === 'string' ? /\[[^\]]+\]/.test(v) : v && typeof v === 'object' ? Object.values(v).some(unfinished) : false;
-  if (unfinished(state.config)) notes.push('Setup incomplete: fill in the bracketed benchmark, investor and broker settings in data/config.json. Your purchases can still be logged now.');
-  if (privateMode()) notes.push('Percentage view is on. Amounts and share quantities are hidden on screen; the underlying files remain public when hosted publicly.');
   if (state.prices?.asOf) {
     const days = Math.floor((Date.now() - Date.parse(state.prices.asOf)) / 86400000);
     if (days > 7) notes.push(`Price snapshot is ${days} days old (${state.prices.asOf}). This site never fetches live prices.`);
@@ -151,18 +148,59 @@ function getPerformance() {
   if (state.errors.prices) throw state.errors.prices;
   return performance(state.holdings, state.prices, state.config.benchmark.ticker);
 }
-function kpis(entry) {
-  let p = null; try { p = getPerformance().latest; } catch { /* Detailed error appears in scorecard. */ }
-  const invested = state.holdings?.reduce((s, h) => s + h.amount_usd, 0);
-  const items = [
-    ['Invested', money(invested, invested), privateMode() ? 'Contribution base' : 'Actual purchase outlay'],
-    ['Current value', p ? money(p.value, p.invested) : '—', p ? `Valued ${p.date}` : 'Awaiting comparable prices'],
-    ['Vs benchmark', p ? `${(p.portfolioReturn - p.benchmarkReturn).toFixed(2)} pp` : '—', 'Return difference'],
-    ['Positions', state.holdings ? new Set(state.holdings.map(h => h.ticker)).size : '—', `Limit ${state.config.limits.max_positions}`],
-    ['This month', entry ? money(entry.budget_usd, state.config.budget_usd_per_month) : '—', entry?.month || 'No valid latest issue']
-  ];
-  return `<div class="kpis">${items.map(([label, value, note]) => `<div class="kpi"><span class="kpi-label">${text(label)}</span><span class="kpi-value">${esc(value)}</span><small>${text(note)}</small></div>`).join('')}</div>`;
+function currentMonth(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Bucharest', year: 'numeric', month: '2-digit' }).formatToParts(now);
+  return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}`;
 }
+function monthPurchases(holdings, month) {
+  return holdings.filter(h => h.date.slice(0, 7) === month);
+}
+function accountSummary(holdings, prices, cash = 0) {
+  if (!nonnegative(cash)) throw new Error('Cash balance must be zero or greater.');
+  const invested = holdings.reduce((sum, h) => sum + h.amount_usd, 0);
+  const maps = new Map(Object.entries(prices?.prices || {}).map(([ticker, rows]) => [ticker, new Map(rows.map(r => [r.date, r.close]))]));
+  const lastBuy = holdings.reduce((latest, h) => h.date > latest ? h.date : latest, '');
+  const candidates = holdings.length ? [...(maps.get(holdings[0].ticker)?.keys() || [])].filter(d => d >= lastBuy && d <= prices.asOf).sort().reverse() : [];
+  const valuedAt = candidates.find(d => holdings.every(h => maps.get(h.ticker)?.has(d))) || null;
+  const values = holdings.map(h => valuedAt ? h.shares * maps.get(h.ticker).get(valuedAt) : h.amount_usd);
+  const investmentsValue = values.reduce((sum, value) => sum + value, 0);
+  return { invested, investmentsValue, cash, balance: investmentsValue + cash, gain: valuedAt ? investmentsValue - invested : null, valuedAt, values };
+}
+function tiles(items, extra = '') {
+  return `<div class="kpis ${extra}">${items.map(([label, value, note]) => `<div class="kpi"><span class="kpi-label">${text(label)}</span><span class="kpi-value">${esc(value)}</span><small>${text(note)}</small></div>`).join('')}</div>`;
+}
+function accountTiles(account, holdings) {
+  return tiles([
+    ['Account balance', money(account.balance, account.invested + account.cash), account.valuedAt ? `Investments + cash · ${account.valuedAt}` : 'Recorded cost + cash · prices unavailable'],
+    ['Total invested', money(account.invested, account.invested), 'All purchase dates'],
+    ['Uninvested cash', money(account.cash, account.invested + account.cash), 'Your manual cash balance'],
+    ['Investment gain / loss', account.gain === null ? '—' : money(account.gain, account.invested), account.valuedAt ? 'Excludes cash and dividends' : 'Requires a complete price snapshot'],
+    ['Positions', new Set(holdings.map(h => h.ticker)).size, `Limit ${state.config.limits.max_positions}`]
+  ], 'account-kpis');
+}
+function purchaseLedger(holdings, title, values = null) {
+  const total = holdings.reduce((sum, h) => sum + h.amount_usd, 0);
+  if (!holdings.length) return panel(title, empty('No purchases recorded for this period. Use Add an investment below.'));
+  return panel(title, `<div class="scroll"><table><thead><tr>${['Date', 'Ticker', 'Bucket', privateMode() ? 'Contribution %' : 'Invested (USD)', ...(!privateMode() ? ['Fill price (USD)', 'Shares'] : []), ...(values ? [privateMode() ? 'Value %' : 'Value / cost (USD)'] : [])].map(label => `<th scope="col">${esc(label)}</th>`).join('')}</tr></thead><tbody>${holdings.map((h, i) => `<tr><td>${esc(h.date)}</td><td>${text(h.ticker)}</td><td>${esc(h.bucket)}</td><td>${money(h.amount_usd, total)}</td>${!privateMode() ? `<td>${fmt(h.price)}</td><td>${fmt(h.shares)}</td>` : ''}${values ? `<td>${money(values[i], total)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`);
+}
+const CASH_KEY = 'invest-dashboard.cash.v1';
+function cashForm() {
+  return panel('Uninvested account cash', `<p class="meta">Optional: enter the cash currently available in your investment account. Update this balance after deposits, withdrawals or trades; purchases do not deduct it automatically.</p><form id="cash-form" class="cash-form"><label for="cash-amount">Cash balance (USD)</label><div class="form-actions"><input id="cash-amount" name="cash" type="number" min="0" step="any" inputmode="decimal" required value="${esc(state.cashBalance)}"><button class="action-button" type="submit">Save cash balance</button></div></form><p class="local-note">Saved in this browser. The account balance combines this cash with all recorded investments.</p><p id="cash-message" class="form-message" role="status" aria-live="polite">${esc(state.cashMessage || '')}</p>${state.cashError ? '<p class="flag">Saved cash could not be loaded. Enter and save the correct balance to restore it.</p>' : ''}`);
+}
+function bindCash() {
+  const form = $('#cash-form');
+  if (!form) return;
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    try {
+      const amount = Number(form.elements.cash.value);
+      if (!nonnegative(amount) || !form.elements.cash.value.trim()) throw new Error('Enter a cash balance of zero or greater.');
+      localStorage.setItem(CASH_KEY, JSON.stringify(amount));
+      state.cashBalance = amount; state.cashError = null; state.cashMessage = 'Cash balance saved. Account total updated.'; render();
+    } catch (error) { $('#cash-message').dataset.error = 'true'; $('#cash-message').textContent = error.message; }
+  });
+}
+
 function allocationBar(core, satellite, label) {
   const total = core + satellite;
   const cp = total ? core / total * 100 : 0;
@@ -171,7 +209,7 @@ function allocationBar(core, satellite, label) {
 function scorecard() {
   try {
     const p = getPerformance().latest;
-    if (!p) return empty('No purchases yet. Use Add an investment above to start your portfolio.');
+    if (!p) return empty('No purchases yet. Use Add an investment below to start your portfolio.');
     return `<p class="meta">Common valuation date ${esc(p.date)}</p><div class="check-row"><span>Your purchases</span><strong class="num">${pct(p.portfolioReturn)}</strong></div><div class="check-row"><span>${text(state.config.benchmark.ticker)}</span><strong class="num">${pct(p.benchmarkReturn)}</strong></div><div class="check-row"><span>Difference</span><strong class="num accent">${(p.portfolioReturn - p.benchmarkReturn).toFixed(2)} pp</strong></div>`;
   } catch (e) { return errorBox(e); }
 }
@@ -204,25 +242,47 @@ function entryHTML(e) {
   return `<article><div class="section-head"><div><h2>Monthly brief / ${esc(e.month)}</h2><p>Generated ${esc(e.generated_at)} · ${text(e.model)} · data as of ${esc(e.data_as_of)}</p></div>${tag('RESEARCH SNAPSHOT')}</div>${[...flags, ...e.warnings].map(w => `<div class="notice">${text(w)}</div>`).join('')}<div class="grid">${panel('Market context', paragraph(e.market_context) + (e.no_buy_reason ? '<h3>No-buy reason</h3>' + paragraph(e.no_buy_reason) : ''))}${panel('Monthly allocation', allocationBar(e.allocation.core_usd, e.allocation.satellite_usd, 'Issue plan · core / satellite') + allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Current target · core / satellite') + `<p class="meta">Budget ${money(e.budget_usd, state.config.budget_usd_per_month)} · Core ${money(e.allocation.core_usd, e.budget_usd)} · Satellite ${money(e.allocation.satellite_usd, e.budget_usd)}</p>`)}</div>${panel('Picks / research metrics', picksTable(e.picks, e.budget_usd))}<div class="grid">${panel('Investment cases', e.picks.map(p => pickDetails(p, e.budget_usd)).join('') || empty('No purchases proposed.'))}${panel('Framework checks', `<p class="meta">Reported by this issue’s researcher; not independently verified by the website.</p>${e.picks.map(p => `<h3>${text(p.ticker)}</h3>${checksHTML(p.checks)}`).join('') || empty('No pick checks recorded.')}`)}</div>${panel('Last month revisited', e.review_of_previous.map(r => `<div class="list-row"><strong>${text(r.ticker)}</strong> ${tag(r.thesis_status)} ${tag(r.action)} <span class="num">${pct(r.change_pct)}</span>${paragraph(r.note)}</div>`).join('') || empty('No previous review recorded.'))}<div class="grid equal">${panel('Watchlist', e.watchlist.map(w => `<div class="list-row"><strong>${text(w.ticker)}</strong>${paragraph(w.trigger)}</div>`).join('') || empty('No watchlist names.'))}${panel('Rejected names', e.rejected.map(r => `<div class="list-row"><strong>${text(r.ticker)}</strong>${paragraph(r.reason)}</div>`).join('') || empty('No rejected names recorded.'))}</div></article>`;
 }
 function monthPage() {
-  const latest = state.entries[0];
-  return kpis(latest?.data) + (state.errors.index ? errorBox(state.errors.index) : latest ? latest.error ? errorBox(latest.error) : entryHTML(latest.data) : panel('This month', empty('No entries yet. Add a file and list it in data/index.json.'))) + panel('Your actual purchases / benchmark scorecard', scorecard());
+  const month = currentMonth();
+  const issue = state.entries.find(e => e.data?.month === month || e.error && e.path === `entries/${month}.json`);
+  const entry = issue?.data;
+  const holdings = monthPurchases(state.holdings || [], month);
+  const invested = holdings.reduce((sum, h) => sum + h.amount_usd, 0);
+  const budget = entry?.budget_usd ?? state.config.budget_usd_per_month;
+  const core = holdings.filter(h => h.bucket === 'core').reduce((sum, h) => sum + h.amount_usd, 0);
+  const satellite = invested - core;
+  const difference = budget - invested;
+  const summary = tiles([
+    ['Invested this month', money(invested, budget), month],
+    ['Monthly budget', money(budget, budget), 'Plan for this calendar month'],
+    [difference >= 0 ? 'Budget remaining' : 'Above budget', money(Math.abs(difference), budget), 'Based on recorded purchases'],
+    ['Purchases this month', holdings.length, 'Current calendar month only'],
+    ['Positions added to', new Set(holdings.map(h => h.ticker)).size, 'Tickers bought this month']
+  ]);
+  const research = state.errors.index ? errorBox(state.errors.index) : issue?.error ? errorBox(issue.error) : entry ? entryHTML(entry) : panel(`Research / ${month}`, empty('No research issue has been published for this month yet. Your monthly purchases are shown above.'));
+  return `<p class="period-label">${esc(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Bucharest', month: 'long', year: 'numeric' }).format(new Date()))} · current month</p>` + (state.errors.holdings ? errorBox(state.errors.holdings) : summary + panel('This month’s allocation', allocationBar(core, satellite, 'Purchases this month · core / satellite')) + purchaseLedger(holdings, 'This month’s purchases')) + research;
 }
+
 function portfolioPage() {
   if (state.errors.holdings) return errorBox(state.errors.holdings);
   const h = state.holdings;
-  let result = null, failure = '';
-  try { result = getPerformance(); } catch (e) { failure = errorBox(e); }
+  const account = accountSummary(h, state.errors.prices ? null : state.prices, state.cashBalance);
+  let result = null, comparisonNote = '';
+  if (!state.config.benchmark.ticker.includes('[')) {
+    try { result = getPerformance(); } catch (error) { comparisonNote = errorBox(error); }
+  }
   const p = result?.latest;
-  const invested = h.reduce((s, r) => s + r.amount_usd, 0);
   let core = 0, satellite = 0;
-  if (p) h.forEach(r => { const v = r.shares * result.maps.get(r.ticker).get(p.date); if (r.bucket === 'core') core += v; else satellite += v; });
-  const actual = core + satellite ? satellite / (core + satellite) * 100 : null;
+  h.forEach((lot, i) => { if (lot.bucket === 'core') core += account.values[i]; else satellite += account.values[i]; });
+  const total = core + satellite;
+  const actual = total ? satellite / total * 100 : null;
   const limits = [];
   if (new Set(h.map(r => r.ticker)).size > state.config.limits.max_positions) limits.push('Position count exceeds the configured maximum.');
   if (actual !== null && actual > state.config.limits.max_satellite_pct_of_portfolio) limits.push('Satellite weight exceeds the portfolio limit.');
-  const allocation = allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Target · core / satellite') + (p ? allocationBar(core, satellite, 'Actual market value · core / satellite') + `<p class="meta">Satellite drift: ${(actual - state.config.split.satellite_pct).toFixed(2)} percentage points.</p>` : empty('Actual allocation needs a complete price snapshot.'));
-  return kpis(state.entries[0]?.data) + failure + limits.map(n => `<div class="notice">${text(n)}</div>`).join('') + `<div class="grid">${panel('Portfolio / benchmark', p ? `<p class="meta">${privateMode() ? 'Cumulative gain / contributed capital (%)' : 'Market value (USD)'} · same purchase dates and USD cash flows</p><div class="chart-wrap"><canvas id="performance-chart" role="img" aria-label="Portfolio versus benchmark. Exact values are in the performance table below."></canvas></div><p id="chart-note" class="meta"></p>` : empty('Log purchases and supply dated prices to unlock performance.'))}${panel('Allocation / target versus actual', allocation)}</div>${panel('Purchase ledger', h.length ? `<div class="scroll"><table><thead><tr>${['Date', 'Ticker', 'ISIN', 'Bucket', privateMode() ? 'Contribution %' : 'Outlay (USD)', ...(!privateMode() ? ['Fill price (USD)', 'Shares'] : []), privateMode() ? 'Value / contributed capital' : 'Value (USD)'].map(x => `<th scope="col">${esc(x)}</th>`).join('')}</tr></thead><tbody>${h.map(r => `<tr><td>${esc(r.date)}</td><td>${text(r.ticker)}</td><td>${text(r.isin)}</td><td>${esc(r.bucket)}</td><td>${money(r.amount_usd, invested)}</td>${!privateMode() ? `<td>${fmt(r.price)}</td><td>${fmt(r.shares)}</td>` : ''}<td>${p ? money(r.shares * result.maps.get(r.ticker).get(p.date), invested) : '—'}</td></tr>`).join('')}</tbody></table></div>` : empty('No holdings yet. Add your actual purchases using the form above.'))}${p ? panel('Performance / exact values', `<p class="meta">Latest complete comparison: ${esc(p.date)}. Price file as of: ${esc(state.prices.asOf)}. Incomplete dates appear as gaps.</p><details><summary>View performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices — no comparison</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn - r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : ''}${panel('How the scorecard works', '<p>Return = (market value − contributed capital) / contributed capital. This is a cumulative, non-annualized return on purchase outlay, not a time-weighted return or IRR. Benchmark units use the exact close on each purchase date. Valuations use shared exact dates only.</p><p>Supply every fill and close in USD. Purchase outlay may include fees; the hypothetical benchmark assumes no fees. Sales, cash balances, dividends and corporate actions are not modeled. Split-adjusted shares and matching prices must be maintained consistently. Sector and single-stock limits cannot be fully checked from this ledger’s schema.</p>')}`;
+  const allocation = allocationBar(state.config.split.core_pct, state.config.split.satellite_pct, 'Target · core / satellite') + allocationBar(core, satellite, account.valuedAt ? 'All investments · market value' : 'All investments · recorded cost') + `<p class="meta">Cash is excluded from the investment split.${actual === null ? '' : ` Satellite drift: ${(actual - state.config.split.satellite_pct).toFixed(2)} percentage points.`}</p>`;
+  const chart = p ? `<p class="meta">${privateMode() ? 'Cumulative gain / contributed capital (%)' : 'Market value (USD)'} · all purchase dates</p><div class="chart-wrap"><canvas id="performance-chart" role="img" aria-label="All recorded investments versus benchmark. Values are in the performance table below."></canvas></div><p id="chart-note" class="meta"></p>` : empty('The benchmark chart will appear when a benchmark and matching price history are available. Your full recorded account balance is shown above.');
+  return `<p class="period-label">Entire account · all dates</p>` + accountTiles(account, h) + (state.errors.prices ? errorBox(state.errors.prices) : '') + limits.map(n => `<div class="notice">${text(n)}</div>`).join('') + `<div class="grid">${panel('Portfolio / benchmark', chart + comparisonNote)}${panel('Investment allocation', allocation)}</div>` + purchaseLedger(h, 'All purchases', account.values) + (p ? panel('Performance / all dates', `<p class="meta">Comparison as of ${esc(p.date)}. Cash is excluded from investment returns.</p><details><summary>View performance table</summary><div class="detail-body scroll"><table><thead><tr><th>Date</th><th>Purchases return</th><th>Benchmark return</th><th>Difference (pp)</th></tr></thead><tbody>${result.rows.map(r => r.gap ? `<tr><td>${r.date}</td><td colspan="3">Incomplete prices</td></tr>` : `<tr><td>${r.date}</td><td>${pct(r.portfolioReturn)}</td><td>${pct(r.benchmarkReturn)}</td><td>${(r.portfolioReturn - r.benchmarkReturn).toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>`) : '') + cashForm();
 }
+
 function drawChart() {
   if (!$('#performance-chart')) return;
   if (!window.Chart) { $('#chart-note').textContent = 'Chart.js could not load. The performance table below remains available.'; return; }
@@ -393,7 +453,7 @@ function render() {
     if (route === 'month') body = monthPage();
     else if (route === 'portfolio') body = portfolioPage();
     else body = panel('Page not found', '<p>Choose a page in the navigation.</p>');
-    $('#content').innerHTML = (['month', 'portfolio'].includes(route) ? purchaseForm() : '') + body; bindSort(); bindPurchases(); drawChart();
+    $('#content').innerHTML = body + (['month', 'portfolio'].includes(route) ? purchaseForm() : ''); bindSort(); bindPurchases(); bindCash(); drawChart();
   } catch (e) { $('#content').innerHTML = errorBox(e); }
 }
 async function start() {
@@ -409,7 +469,10 @@ async function start() {
   state.publishedHoldings = state.holdings || [];
   try { state.localPurchases = loadLocalPurchases(localStorage); refreshHoldings(); }
   catch (error) { state.localError = error; }
-  render();
+  try {
+    const rawCash = localStorage.getItem(CASH_KEY);
+    if (rawCash !== null) { const cash = JSON.parse(rawCash); if (!nonnegative(cash)) throw new Error('Invalid saved cash balance.'); state.cashBalance = cash; }
+  } catch (error) { state.cashError = error; }
   if (state.index && !state.errors.index) {
     if (new Set(state.index.entries).size !== state.index.entries.length) state.errors.index = new Error(`${FILES.index}: duplicate entry paths.`);
     else state.entries = await Promise.all(state.index.entries.map(async path => {
@@ -423,4 +486,4 @@ async function start() {
 }
 if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTML = errorBox(e); });
 // Enables deterministic arithmetic/validation tests without adding browser dependencies.
-if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, mergePurchases, purchaseFromFields, loadLocalPurchases };
+if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, mergePurchases, purchaseFromFields, loadLocalPurchases };

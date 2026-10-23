@@ -97,3 +97,11 @@ If a file fails, check its exact capitalization, path and JSON syntax. A config 
 - `./FRAMEWORK.md` → included; fetched as text, not JSON
 
 All requests are relative to the site directory, so the GitHub Pages project subpath works. Future entry paths are resolved relative to `./data/`. No live price API is called.
+
+## Monthly activity and entire account
+
+This month shows purchases in the current calendar month in Europe/Bucharest, its budget, and only a research issue whose month matches that period. Portfolio shows all purchase lots and the full recorded account balance in USD. Amount display is enabled in data/config.json.
+
+Account balance equals recorded investment value plus the optional uninvested cash balance saved in this browser. Investment prices use the most recent date shared by every holding, without depending on a benchmark. When there is no complete price snapshot, investment value falls back to purchase outlay and is labelled recorded cost; gain/loss is unavailable. The cash field is a manual snapshot: update it after deposits, withdrawals and trades. Purchases do not deduct cash automatically. Cash is excluded from investment allocation and performance returns. It is not included in the holdings.json export.
+
+The Add an investment form appears at the bottom of both pages. The setup and percentage-view notices have been removed.

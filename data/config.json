@@ -22,5 +22,5 @@
     "max_sector_pct": 35
   },
   "exclusions": ["leveraged ETFs", "inverse ETFs", "options", "OTC", "SPACs"],
-  "public_amounts": false
+  "public_amounts": true
 }
