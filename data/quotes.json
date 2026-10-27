@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-27T07:12:02.661Z",
+  "fetched_at": "2026-10-27T08:15:00.238Z",
   "quotes": {
     "MSFT": {
       "price": 530.16,
@@ -24,6 +24,9 @@
     }
   },
   "errors": {
-    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
+    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required.",
+    "MSFT": "Stocktwits quote predates the saved quote; preserving last known quote and timestamp.",
+    "BRK.B": "Stocktwits quote predates the saved quote; preserving last known quote and timestamp.",
+    "GOOGL": "Stocktwits quote predates the saved quote; preserving last known quote and timestamp."
   }
 }
