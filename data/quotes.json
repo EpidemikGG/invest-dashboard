@@ -1,30 +1,29 @@
 {
-  "fetched_at": "2026-10-27T01:18:09.475Z",
+  "fetched_at": "2026-10-27T02:18:17.656Z",
   "quotes": {
     "MSFT": {
-      "price": 531.91,
-      "price_time": "2026-10-26T21:00:12-04:00",
+      "price": 531.64,
+      "price_time": "2026-10-26T21:46:52-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     },
     "BRK.B": {
-      "price": 547.6,
-      "price_time": "2026-10-26T18:54:56-04:00",
+      "price": 547.96,
+      "price_time": "2026-10-26T21:45:35-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 318.13,
-      "price_time": "2026-10-26T21:16:36-04:00",
+      "price": 318.2,
+      "price_time": "2026-10-26T22:17:58-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required.",
-    "BRK.B": "Stocktwits quote predates the saved quote; preserving last known quote and timestamp."
+    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
   }
 }
