@@ -6,15 +6,15 @@ Modify expands a configuration row immediately below the chosen position. Close,
 
 Modify and Remove sit immediately beside each stock symbol. Back to stocks and Cancel discard unsaved form changes and return focus to the position list. Saving or removing a purchase closes the editor and returns to the list. Each symbol shows a green/red diverging bar, percentage return on actual outlay and USD gain/loss when amounts are visible. The center line is break-even; the bar uses a ±10% scale, expanding for moves beyond that range. These bars show a single valuation, not a historical price trend. Missing prices display Awaiting market price.
 
-## Stocktwits snapshots and portfolio controls
+## Twelve Data quote snapshots and portfolio controls
 
-Portfolio now reads data/quotes.json separately from daily closing histories. ChatGPT refreshes the published holdings’ Stocktwits quotes hourly through its connected tools. The site reloads snapshots on open, on the Reload latest snapshot button, and every five minutes while visible. This is an hourly snapshot feed, not a real-time stream; Stocktwits quotes may be delayed. Each price displays the provider timestamp and quotes older than two hours are marked Older quote. A quote after the current time by more than five minutes is rejected. Unsupported symbols show missing prices. VWCE is currently unsupported by Stocktwits and no USD conversion is guessed. Current account valuation uses snapshots only when all holdings have usable quotes; otherwise the dated-history or recorded-cost fallback remains explicitly labelled. Intraday snapshots are never used as historical daily closes.
+Portfolio reads data/quotes.json separately from historical closing prices. The hourly GitHub Actions workflow refreshes published holdings using Twelve Data and the repository secret TWELVE_DATA_API_KEY. The browser never receives the key. Snapshots are not a real-time stream. The site reloads them on open, with the Reload latest snapshot button, and every five minutes while visible. Each quote shows its provider timestamp; quotes older than two hours are marked Older quote and quotes over five minutes in the future are rejected. Unsupported symbols remain explicitly unavailable: do not substitute a different listing or guess currency conversion. If Twelve Data excludes a symbol such as VWCE on the current plan, retain that error and explain it. Use quote snapshots only for current valuation; never append intraday snapshots to historical daily closes.
 
 Edit and Remove in Active Positions operate on individual purchase records or whole positions. Edits validate dates, costs, shares and bucket consistency. They do not execute broker trades. Overrides are saved locally in this browser; Undo last change and Restore published records reverse them. Export updated holdings and ask ChatGPT to replace the published ledger to sync devices. The price automation can only read published holdings. Purchase prices remain actual historical inputs, distinct from market quotes.
 
 # Invest Dashboard
 
-A static, mobile-friendly investing research dashboard. Upload the contents of this folder to a GitHub repository. There is no installation, build step, backend, API key or automatic trading. Chart.js 4.4.8 is the only external script.
+A static, mobile-friendly investing research dashboard. Upload the contents of this folder to a GitHub repository. There is no installation, browser-side API key or automatic trading. The optional hourly GitHub Actions quote job accesses Twelve Data with a repository secret. Chart.js 4.4.8 is the only external script.
 
 ## Current UI: supplied HTML reference
 
@@ -22,13 +22,14 @@ The UI follows `code(2).html`: fixed dark appearance, Space Grotesk/Geist typogr
 
 `data/design-preview.json` contains the five **unverified example cards** copied from the supplied HTML (NVDA, PLTR, CRWD, SOFI, TSLA). They appear only when no research report exists for the current month. They are not real-time quotes, verified research, purchases, or portfolio data. A normal current-month entry automatically replaces them. The Add to Investment Form buttons select a ticker; users must supply their actual execution price and shares. The source HTML's arbitrary 20-share default is intentionally not used.
 
-The real portfolio always reads `data/holdings.json` plus locally saved purchases. Mockup balances and positions are never imported. Stocktwits/Stocklake/SEC content is not fetched live. Charts need actual dated records in `data/prices.json` and a configured benchmark. The source layout's invalid closing tags are corrected so portfolio elements stay inside their own route.
+The real portfolio always reads `data/holdings.json` plus locally saved purchases. Mockup balances and positions are never imported. The design preview's Stocktwits/Stocklake claims are unverified examples, not live data. Monthly research uses the connected Twelve Data and Firecrawl tools. Charts need actual dated records in `data/prices.json` and a configured benchmark. The source layout's invalid closing tags are corrected so portfolio elements stay inside their own route.
 
 ## Files and setup
 
 - `index.html`, `styles.css`, `app.js`: interface and calculations.
-- `FRAMEWORK.md`: rules extracted verbatim from your supplied document.
-- `data/config.json`: settings extracted verbatim from your document. The config lives under data so every JSON request stays there.
+- `FRAMEWORK.md`: saved investing rules.
+- `RESEARCH_WORKFLOW.md`: repeatable current-data research, scoring, publishing and verification procedure.
+- `data/config.json`: settings and investor preferences; broker and benchmark fields remain unconfigured until confirmed. The config lives under data so every JSON request stays there.
 - `data/index.json`: entry paths, newest first. This Month selects the entry for the current Europe/Bucharest calendar month. A missing report displays explicitly labelled design-preview cards; an invalid report displays its validation error.
 - `data/entries/example.json`: invented demonstration, not investment advice. Dates and enum values retain schema-valid forms; descriptive text starts with EXAMPLE. Remove its index line when your first real issue is ready.
 - `data/holdings.json`: actual purchases only, initially empty.
