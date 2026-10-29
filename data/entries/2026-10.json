@@ -8,35 +8,192 @@
     "core_usd": 0,
     "satellite_usd": 0
   },
-  "market_context": "Research brief for a 1–2 year holding period. Prices are Twelve Data quotes retrieved 2026-10-29; company operating results are from the latest official releases linked below. A stock portfolio cannot be described as 80% steady over a 1–2 year window, and this dashboard does not have enough configured broker/fee/benchmark information to validate an ETF purchase.",
+  "market_context": "Stock research cards for the requested 1–2 year horizon and approximate 80% steadier / 20% riskier preference. Cards follow the example layout, but use sourced company disclosures and dated Twelve Data prices. No purchase is recommended or recorded: stocks can fall materially over 1–2 years, and a stock cannot be treated as a steady or capital-protected allocation. The broker, fees and benchmark needed to verify a core ETF purchase are not configured.",
   "review_of_previous": [],
-  "picks": [],
-  "watchlist": [
+  "picks": [
     {
       "ticker": "PG",
-      "trigger": "Indicative Twelve Data price: $159.05 on 2026-10-29. Lower-volatility business watch candidate, not capital-safe. P&G Q1 FY2027 net sales +4%, diluted EPS +1%; FY27 organic sales growth guide remains 1–3%, with about $1.4B after-tax commodity cost headwind. Reassess after the next results and only consider money that can stay invested longer. Source: https://us.pg.com/newsroom/news-releases/PG-Announces-Fiscal-Year-2027-First-Quarter-Results/"
+      "isin": "US7427181091",
+      "name": "The Procter & Gamble Company",
+      "exchange": "NYSE",
+      "instrument": "stock",
+      "bucket": "core",
+      "risk": "low",
+      "amount_usd": 0,
+      "price_at_research": 159.05,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "Lower-volatility business candidate to research further, not a safe asset or a 1–2 year return guarantee. P&G's Q1 FY2027 net sales rose 4% and diluted EPS rose 1%; FY27 organic sales guidance remains 1–3%.",
+      "bear_case": "Slow growth, commodity and foreign-exchange costs, competition or weaker consumer demand could pressure results and the share price. The latest release cited about $1.4B after-tax commodity cost headwinds.",
+      "catalysts": [
+        "Review the next quarterly results and FY2027 guidance."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": null,
+      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sources": [
+        {
+          "title": "P&G Announces Fiscal Year 2027 First Quarter Results",
+          "url": "https://us.pg.com/newsroom/news-releases/PG-Announces-Fiscal-Year-2027-First-Quarter-Results/",
+          "accessed": "2026-10-29"
+        }
+      ]
     },
     {
       "ticker": "JNJ",
-      "trigger": "Indicative Twelve Data price: $274.40 on 2026-10-29. Defensive-sector watch candidate, with legal, patent, clinical and regulatory risks. Q3 2026 sales +5.9%; adjusted EPS fell 7.5% year over year, while full-year guidance was raised. Reassess after the next results; price is not a valuation recommendation. Source: https://www.investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-reports-Q3-2026-results-raises-2026-guidance/default.aspx"
+      "isin": "US4781601046",
+      "name": "Johnson & Johnson",
+      "exchange": "NYSE",
+      "instrument": "stock",
+      "bucket": "core",
+      "risk": "moderate",
+      "amount_usd": 0,
+      "price_at_research": 274.4,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "Healthcare business candidate for the steadier part of a watchlist. Q3 2026 sales grew 5.9%, and the company raised its full-year guidance.",
+      "bear_case": "Adjusted EPS declined 7.5% year over year in Q3. Litigation, patent expirations, clinical results, regulation and competition can hurt earnings or valuation.",
+      "catalysts": [
+        "Review the next quarterly report and updated full-year outlook."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": null,
+      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sources": [
+        {
+          "title": "Johnson & Johnson reports Q3 2026 results and raises 2026 guidance",
+          "url": "https://www.investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-reports-Q3-2026-results-raises-2026-guidance/default.aspx",
+          "accessed": "2026-10-29"
+        }
+      ]
     },
     {
       "ticker": "JPM",
-      "trigger": "Indicative Twelve Data price: $343.39 on 2026-10-29. Diversified financial watch candidate, but exposed to credit and economic cycles. Q3 2026 net income was $15.3B (+6% y/y), ROTCE 20%; the release reported $2.7B credit costs, including a $539M net reserve build. Source: https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/3rd-quarter/6c1f8114-1be4-4174-8292-f75bbb59bc21.pdf"
+      "isin": "US46625H1005",
+      "name": "JPMorgan Chase & Co.",
+      "exchange": "NYSE",
+      "instrument": "stock",
+      "bucket": "satellite",
+      "risk": "moderate",
+      "amount_usd": 0,
+      "price_at_research": 343.39,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "Diversified financial-sector company to research as a satellite candidate. Q3 2026 net income was $15.3B, up 6% year over year, and ROTCE was 20%.",
+      "bear_case": "Credit costs were $2.7B in Q3, including a $539M net reserve build. Recession, rising defaults, rates or market stress could reduce earnings and the share price.",
+      "catalysts": [
+        "Review quarterly loan quality, reserve builds and net interest income."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": null,
+      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sources": [
+        {
+          "title": "JPMorgan Chase Q3 2026 earnings release",
+          "url": "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/3rd-quarter/6c1f8114-1be4-4174-8292-f75bbb59bc21.pdf",
+          "accessed": "2026-10-29"
+        }
+      ]
     },
     {
       "ticker": "NVDA",
-      "trigger": "Indicative Twelve Data price: $213.47 on 2026-10-29. High-risk growth watch candidate, not a stable allocation. Latest official Q2 FY2027 release reported revenue +106% y/y and data-center revenue +117%; manufacturing capacity, competition, regulation and sharp valuation/price swings are material risks. Existing MSFT and GOOGL holdings already create substantial technology/AI exposure, so avoid adding concentration for this short horizon. Source: https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/"
+      "isin": "US67066G1040",
+      "name": "NVIDIA Corporation",
+      "exchange": "NASDAQ",
+      "instrument": "stock",
+      "bucket": "satellite",
+      "risk": "high",
+      "amount_usd": 0,
+      "price_at_research": 213.47,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "High-growth, high-risk candidate for the riskier watchlist sleeve. NVIDIA's official Q2 FY2027 release reported revenue growth of 106% year over year and data-center revenue growth of 117%.",
+      "bear_case": "The share price can fall sharply if growth slows or expectations reset. Manufacturing and packaging capacity, competition and regulation are material risks. Your existing MSFT and GOOGL holdings already add technology and AI exposure.",
+      "catalysts": [
+        "Monitor quarterly demand, data-center revenue and supply constraints."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": null,
+      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no Stocktwits or other sentiment data used.",
+      "sources": [
+        {
+          "title": "NVIDIA Announces Financial Results for Second Quarter Fiscal 2027",
+          "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/",
+          "accessed": "2026-10-29"
+        }
+      ]
     }
   ],
+  "watchlist": [],
   "rejected": [],
-  "no_buy_reason": "No stock purchase is proposed. With a 1–2 year horizon, even established consumer and healthcare companies can lose value when you need the money; there is no reliable way to make 80% of an equity allocation steady. Keep the $300 uninvested in this dashboard while deciding whether it needs to remain accessible; money needed on this schedule is generally better matched to insured cash or short-term government instruments. No order was placed and no holdings were changed. The saved portfolio framework is ETF-first, but broker, fees, and benchmark details are not configured, so a compliant core ETF cannot be verified here.",
+  "no_buy_reason": "These cards are research candidates, not buys. All candidate allocations remain $0 because your 1–2 year horizon does not support calling stock investments steady, and valuation, brokerage access, fees and other required checks could not be verified. Nothing has been purchased and your recorded holdings are unchanged.",
   "warnings": [
-    "The $300 budget is intentionally unallocated; this is a research brief, not a trade instruction.",
-    "Twelve Data statistics require Pro, Ultra, Venture or Enterprise; analyst price targets require Ultra or Enterprise. Valuation multiples, beta and consensus targets were not available on the connected plan.",
+    "The $300 monthly budget remains intentionally unallocated; the card layout is informational and not a trade instruction.",
+    "The example screenshot's Stocktwits, Stocklake and conviction-score figures were sample claims marked unverified in the project. They were not reused. Sentiment is not scored here.",
+    "Twelve Data statistics require Pro, Ultra, Venture or Enterprise; analyst price targets require Ultra or Enterprise. Valuation multiples, beta and consensus targets were unavailable on the connected plan.",
     "Twelve Data reported VWCE is available starting with Grow or Venture, so current portfolio ETF pricing was unavailable.",
-    "Quotes can change and the prices shown are informational observations from 2026-10-29. Check a live quote, currency conversion, broker access and fees before any future order."
+    "Quotes are informational observations from 2026-10-29 and can change. Confirm currency, broker access and fees before any future order."
   ],
-  "research_prompt": "User asked for the best stocks to invest $300 in this month using Twelve Data and Firecrawl. User's answers: holding period 1–2 years; risk preference roughly 80% steadier and 20% riskier with high profitability chance. Respect saved portfolio framework and existing holdings; do not present guaranteed returns.",
-  "research_summary": "Watchlist research only. PG: latest official Q1 FY2027 release on 2026-10-22 reported net sales +4%, diluted EPS +1%, and maintained FY27 organic sales growth guidance of 1–3%, with commodity cost headwinds. JNJ: official Q3 2026 release on 2026-10-13 reported sales +5.9%, adjusted EPS -7.5%, and raised full-year guidance; legal/patent/regulatory risks remain. JPM: official Q3 2026 release reported $15.3B net income (+6%), 20% ROTCE and $2.7B credit costs. NVDA: official Q2 FY2027 release dated 2026-08-26 reported total revenue +106% and data-center revenue +117%; this is a high-volatility candidate that overlaps with user's MSFT/GOOGL exposure. Sources: PG https://us.pg.com/newsroom/news-releases/PG-Announces-Fiscal-Year-2027-First-Quarter-Results/ ; JNJ https://www.investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-reports-Q3-2026-results-raises-2026-guidance/default.aspx ; JPM https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/3rd-quarter/6c1f8114-1be4-4174-8292-f75bbb59bc21.pdf ; NVDA https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/"
+  "research_prompt": "User asked for the best stocks to invest $300 in this month using Twelve Data and Firecrawl. User's answers: holding period 1–2 years; risk preference roughly 80% steadier and 20% riskier with high profitability chance. User then asked for the This Month dashboard to match the screenshot's stock-card style. Use that style with sourced claims, never copy the screenshot's unverified sample data. Respect saved portfolio framework and existing holdings.",
+  "research_summary": "Card-style watchlist research only. PG: official Q1 FY2027 release (2026-10-22) reported net sales +4%, diluted EPS +1%, maintained FY27 organic-sales growth guidance 1–3%; commodity cost headwinds. JNJ: official Q3 2026 release (2026-10-13) reported sales +5.9%, adjusted EPS -7.5%, raised full-year guidance; legal/patent/regulatory risks. JPM: Q3 2026 net income $15.3B (+6%), ROTCE 20%, $2.7B credit costs including $539M net reserve build. NVDA: Q2 FY2027 release (2026-08-26) reported revenue +106% and data-center revenue +117%; high volatility and overlap with existing MSFT/GOOGL exposure. Source links are attached to each card."
 }
