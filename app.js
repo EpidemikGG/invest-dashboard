@@ -261,7 +261,7 @@ function researchExtras(entry) {
 }
 function sentiment(score) {
   if (!Number.isInteger(score) || score < 0 || score > 100) return { label: 'Not scored', className: 'unscored' };
-  return score >= 80 ? { label: 'Strong buy', className: 'positive' } : score >= 60 ? { label: 'Buy', className: 'positive' } : score >= 40 ? { label: 'Neutral', className: 'neutral' } : score >= 20 ? { label: 'Weak buy', className: 'cautious' } : { label: 'Avoid', className: 'cautious' };
+  return score >= 75 ? { label: 'Confident', className: 'positive' } : score >= 65 ? { label: 'Bullish', className: 'positive' } : score >= 50 ? { label: 'Mixed', className: 'neutral' } : { label: 'Cautious', className: 'cautious' };
 }
 function researchPrice(pick) {
   if (privateMode()) return 'Hidden';
