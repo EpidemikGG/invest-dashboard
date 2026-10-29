@@ -1,1 +1,6 @@
-{"entries": ["entries/example.json"]}
+{
+  "entries": [
+    "entries/2026-10.json",
+    "entries/example.json"
+  ]
+}
