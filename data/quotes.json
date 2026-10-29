@@ -1,29 +1,29 @@
 {
-  "fetched_at": "2026-10-29T16:37:52Z",
+  "fetched_at": "2026-10-29T16:39:13Z",
   "quotes": {
     "MSFT": {
       "price": 524.13,
-      "price_time": "2026-10-29T16:37:00Z",
+      "price_time": "2026-10-29T16:39:00Z",
       "currency": "USD",
       "source": "Twelve Data",
       "exchange": "NASDAQ"
     },
     "BRK.B": {
-      "price": 544.43,
-      "price_time": "2026-10-29T16:37:00Z",
+      "price": 544.58,
+      "price_time": "2026-10-29T16:38:00Z",
       "currency": "USD",
       "source": "Twelve Data",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 285.565,
-      "price_time": "2026-10-29T16:37:00Z",
+      "price": 285.635,
+      "price_time": "2026-10-29T16:39:00Z",
       "currency": "USD",
       "source": "Twelve Data",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "VWCE": "Twelve Data HTTP 404: **symbol** or **figi** parameter is missing or invalid. Please provide a valid symbol according to API documentation: https://twelvedata.com/docs#reference-data"
+    "VWCE": "Twelve Data HTTP 404: This symbol is available starting with the Grow or Venture plan. Consider upgrading now at https://twelvedata.com/pricing"
   }
 }
