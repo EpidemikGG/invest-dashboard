@@ -1,13 +1,21 @@
 {
   "budget_usd_per_month": 300,
-  "split": { "core_pct": 80, "satellite_pct": 20 },
+  "split": {
+    "core_pct": 80,
+    "satellite_pct": 20
+  },
   "core_mode": "etf_first",
-  "benchmark": { "name": "[broad world or S&P 500 UCITS ETF — first run proposes one]", "ticker": "[TICKER]", "isin": "[ISIN]" },
+  "benchmark": {
+    "name": "[broad world or S&P 500 UCITS ETF — first run proposes one]",
+    "ticker": "[TICKER]",
+    "isin": "[ISIN]"
+  },
   "investor": {
     "country": "Romania",
     "eu_retail": true,
-    "horizon_years": "[e.g. 10+]",
-    "emergency_fund_in_place": "[yes/no]"
+    "horizon_years": "1–2 years",
+    "emergency_fund_in_place": "[yes/no]",
+    "risk_preference": "About 80% steadier exposure and 20% higher-risk growth exposure; do not describe stocks as capital-protected or guarantee returns."
   },
   "broker": {
     "name": "[YOUR BROKER]",
@@ -21,6 +29,12 @@
     "max_satellite_pct_of_portfolio": 25,
     "max_sector_pct": 35
   },
-  "exclusions": ["leveraged ETFs", "inverse ETFs", "options", "OTC", "SPACs"],
+  "exclusions": [
+    "leveraged ETFs",
+    "inverse ETFs",
+    "options",
+    "OTC",
+    "SPACs"
+  ],
   "public_amounts": true
 }
