@@ -12,6 +12,92 @@
   "review_of_previous": [],
   "picks": [
     {
+      "ticker": "NVDA",
+      "isin": "US67066G1040",
+      "name": "NVIDIA Corporation",
+      "exchange": "NASDAQ",
+      "instrument": "stock",
+      "bucket": "satellite",
+      "risk": "high",
+      "amount_usd": 0,
+      "price_at_research": 213.47,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "High-growth, high-risk candidate for the riskier watchlist sleeve. NVIDIA's official Q2 FY2027 release reported revenue growth of 106% year over year and data-center revenue growth of 117%.",
+      "bear_case": "The share price can fall sharply if growth slows or expectations reset. Manufacturing and packaging capacity, competition and regulation are material risks. Your existing MSFT and GOOGL holdings already add technology and AI exposure.",
+      "catalysts": [
+        "Monitor quarterly demand, data-center revenue and supply constraints."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": 68,
+      "sentiment_reason": "Research conviction 68/100. Rubric: reported operating momentum 30/30; business resilience 16/25; risk and fit with your existing portfolio 12/25; evidence and valuation completeness 10/20. Revenue +106% and data-center revenue +117% are strong; volatility, existing MSFT/GOOGL exposure, and missing valuation statistics temper the score.",
+      "sources": [
+        {
+          "title": "NVIDIA Announces Financial Results for Second Quarter Fiscal 2027",
+          "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/",
+          "accessed": "2026-10-29"
+        }
+      ]
+    },
+    {
+      "ticker": "JPM",
+      "isin": "US46625H1005",
+      "name": "JPMorgan Chase & Co.",
+      "exchange": "NYSE",
+      "instrument": "stock",
+      "bucket": "satellite",
+      "risk": "moderate",
+      "amount_usd": 0,
+      "price_at_research": 343.39,
+      "price_date": "2026-10-29",
+      "currency": "USD",
+      "thesis": "Diversified financial-sector company to research as a satellite candidate. Q3 2026 net income was $15.3B, up 6% year over year, and ROTCE was 20%.",
+      "bear_case": "Credit costs were $2.7B in Q3, including a $539M net reserve build. Recession, rising defaults, rates or market stress could reduce earnings and the share price.",
+      "catalysts": [
+        "Review quarterly loan quality, reserve builds and net interest income."
+      ],
+      "metrics": {
+        "pe_forward": null,
+        "revenue_growth_yoy": null,
+        "fcf_margin": null,
+        "debt_to_equity": null,
+        "beta": null,
+        "dividend_yield": null,
+        "next_earnings_date": null
+      },
+      "checks": {
+        "eu_retail_buyable": false,
+        "fee_under_1pct": false,
+        "no_earnings_within_14d": false,
+        "position_cap_ok": false
+      },
+      "confidence": "low",
+      "sentiment_score": 66,
+      "sentiment_reason": "Research conviction 66/100. Rubric: reported operating momentum 23/30; business resilience 20/25; risk and fit with your existing portfolio 14/25; evidence and valuation completeness 9/20. Net income +6% and 20% ROTCE help; $2.7B credit costs and reserve build temper the score. Valuation statistics were unavailable.",
+      "sources": [
+        {
+          "title": "JPMorgan Chase Q3 2026 earnings release",
+          "url": "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/3rd-quarter/6c1f8114-1be4-4174-8292-f75bbb59bc21.pdf",
+          "accessed": "2026-10-29"
+        }
+      ]
+    },
+    {
       "ticker": "PG",
       "isin": "US7427181091",
       "name": "The Procter & Gamble Company",
@@ -93,92 +179,6 @@
         {
           "title": "Johnson & Johnson reports Q3 2026 results and raises 2026 guidance",
           "url": "https://www.investor.jnj.com/investor-news/news-details/2026/Johnson--Johnson-reports-Q3-2026-results-raises-2026-guidance/default.aspx",
-          "accessed": "2026-10-29"
-        }
-      ]
-    },
-    {
-      "ticker": "JPM",
-      "isin": "US46625H1005",
-      "name": "JPMorgan Chase & Co.",
-      "exchange": "NYSE",
-      "instrument": "stock",
-      "bucket": "satellite",
-      "risk": "moderate",
-      "amount_usd": 0,
-      "price_at_research": 343.39,
-      "price_date": "2026-10-29",
-      "currency": "USD",
-      "thesis": "Diversified financial-sector company to research as a satellite candidate. Q3 2026 net income was $15.3B, up 6% year over year, and ROTCE was 20%.",
-      "bear_case": "Credit costs were $2.7B in Q3, including a $539M net reserve build. Recession, rising defaults, rates or market stress could reduce earnings and the share price.",
-      "catalysts": [
-        "Review quarterly loan quality, reserve builds and net interest income."
-      ],
-      "metrics": {
-        "pe_forward": null,
-        "revenue_growth_yoy": null,
-        "fcf_margin": null,
-        "debt_to_equity": null,
-        "beta": null,
-        "dividend_yield": null,
-        "next_earnings_date": null
-      },
-      "checks": {
-        "eu_retail_buyable": false,
-        "fee_under_1pct": false,
-        "no_earnings_within_14d": false,
-        "position_cap_ok": false
-      },
-      "confidence": "low",
-      "sentiment_score": 66,
-      "sentiment_reason": "Research conviction 66/100. Rubric: reported operating momentum 23/30; business resilience 20/25; risk and fit with your existing portfolio 14/25; evidence and valuation completeness 9/20. Net income +6% and 20% ROTCE help; $2.7B credit costs and reserve build temper the score. Valuation statistics were unavailable.",
-      "sources": [
-        {
-          "title": "JPMorgan Chase Q3 2026 earnings release",
-          "url": "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/quarterly-earnings/2026/3rd-quarter/6c1f8114-1be4-4174-8292-f75bbb59bc21.pdf",
-          "accessed": "2026-10-29"
-        }
-      ]
-    },
-    {
-      "ticker": "NVDA",
-      "isin": "US67066G1040",
-      "name": "NVIDIA Corporation",
-      "exchange": "NASDAQ",
-      "instrument": "stock",
-      "bucket": "satellite",
-      "risk": "high",
-      "amount_usd": 0,
-      "price_at_research": 213.47,
-      "price_date": "2026-10-29",
-      "currency": "USD",
-      "thesis": "High-growth, high-risk candidate for the riskier watchlist sleeve. NVIDIA's official Q2 FY2027 release reported revenue growth of 106% year over year and data-center revenue growth of 117%.",
-      "bear_case": "The share price can fall sharply if growth slows or expectations reset. Manufacturing and packaging capacity, competition and regulation are material risks. Your existing MSFT and GOOGL holdings already add technology and AI exposure.",
-      "catalysts": [
-        "Monitor quarterly demand, data-center revenue and supply constraints."
-      ],
-      "metrics": {
-        "pe_forward": null,
-        "revenue_growth_yoy": null,
-        "fcf_margin": null,
-        "debt_to_equity": null,
-        "beta": null,
-        "dividend_yield": null,
-        "next_earnings_date": null
-      },
-      "checks": {
-        "eu_retail_buyable": false,
-        "fee_under_1pct": false,
-        "no_earnings_within_14d": false,
-        "position_cap_ok": false
-      },
-      "confidence": "low",
-      "sentiment_score": 68,
-      "sentiment_reason": "Research conviction 68/100. Rubric: reported operating momentum 30/30; business resilience 16/25; risk and fit with your existing portfolio 12/25; evidence and valuation completeness 10/20. Revenue +106% and data-center revenue +117% are strong; volatility, existing MSFT/GOOGL exposure, and missing valuation statistics temper the score.",
-      "sources": [
-        {
-          "title": "NVIDIA Announces Financial Results for Second Quarter Fiscal 2027",
-          "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/",
           "accessed": "2026-10-29"
         }
       ]
