@@ -1,23 +1,23 @@
 {
-  "fetched_at": "2026-10-29T13:11:19.664Z",
+  "fetched_at": "2026-10-29T14:12:16.935Z",
   "quotes": {
     "MSFT": {
-      "price": 545.88,
-      "price_time": "2026-10-29T09:11:05-04:00",
+      "price": 524.63,
+      "price_time": "2026-10-29T10:12:08-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     },
     "BRK.B": {
-      "price": 546.71,
-      "price_time": "2026-10-29T09:04:22-04:00",
+      "price": 545.01,
+      "price_time": "2026-10-29T10:11:25-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 287.61,
-      "price_time": "2026-10-29T09:11:14-04:00",
+      "price": 285.07,
+      "price_time": "2026-10-29T10:12:16-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
