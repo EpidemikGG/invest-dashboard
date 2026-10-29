@@ -1,29 +1,29 @@
 {
-  "fetched_at": "2026-10-29T16:12:36.646Z",
+  "fetched_at": "2026-10-29T16:37:52Z",
   "quotes": {
     "MSFT": {
-      "price": 524.29,
-      "price_time": "2026-10-29T12:12:32-04:00",
+      "price": 524.13,
+      "price_time": "2026-10-29T16:37:00Z",
       "currency": "USD",
-      "source": "Stocktwits",
+      "source": "Twelve Data",
       "exchange": "NASDAQ"
     },
     "BRK.B": {
-      "price": 543.26,
-      "price_time": "2026-10-29T12:12:28-04:00",
+      "price": 544.43,
+      "price_time": "2026-10-29T16:37:00Z",
       "currency": "USD",
-      "source": "Stocktwits",
+      "source": "Twelve Data",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 285.81,
-      "price_time": "2026-10-29T12:12:32-04:00",
+      "price": 285.565,
+      "price_time": "2026-10-29T16:37:00Z",
       "currency": "USD",
-      "source": "Stocktwits",
+      "source": "Twelve Data",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
+    "VWCE": "Twelve Data HTTP 404: **symbol** or **figi** parameter is missing or invalid. Please provide a valid symbol according to API documentation: https://twelvedata.com/docs#reference-data"
   }
 }
