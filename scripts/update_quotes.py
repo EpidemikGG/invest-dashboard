@@ -23,7 +23,7 @@ INSTRUMENTS = {
     "MSFT": {"exchange": "NASDAQ"},
     "BRK.B": {"exchange": "NYSE"},
     "GOOGL": {"exchange": "NASDAQ"},
-    "VWCE": {"exchange": "Xetra", "type": "ETF"},
+    "VWCE": {"mic_code": "XETR", "type": "ETF"},
 }
 TRANSIENT_CODES = {429, 500, 502, 503, 504}
 
@@ -110,11 +110,14 @@ def fetch_fx_rate(currency: str) -> tuple[float, str | None]:
 def fetch_quote(ticker: str, config: dict[str, str]) -> dict:
     params = {
         "symbol": ticker,
-        "exchange": config["exchange"],
         "interval": "1min",
         "prepost": "true",
         "timezone": "UTC",
     }
+    if config.get("mic_code"):
+        params["mic_code"] = config["mic_code"]
+    else:
+        params["exchange"] = config["exchange"]
     if config.get("type"):
         params["type"] = config["type"]
     payload = request_json("quote", params)
@@ -135,7 +138,7 @@ def fetch_quote(ticker: str, config: dict[str, str]) -> dict:
         "price_time": quote_time,
         "currency": "USD",
         "source": "Twelve Data",
-        "exchange": str(payload.get("exchange") or config["exchange"]),
+        "exchange": str(payload.get("exchange") or config.get("exchange") or config.get("mic_code")),
         **(
             {"original_currency": currency, "fx_pair": f"{currency}/USD", "fx_rate": fx_rate}
             if fx_rate is not None else {}
