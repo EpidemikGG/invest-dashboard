@@ -44,8 +44,8 @@
         "position_cap_ok": false
       },
       "confidence": "low",
-      "sentiment_score": null,
-      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sentiment_score": 64,
+      "sentiment_reason": "Research conviction 64/100. Rubric: reported operating momentum 18/30; business resilience 22/25; risk and fit with your existing portfolio 17/25; evidence and valuation completeness 7/20. Sales +4% and EPS +1% support the case; 1–3% organic-growth outlook and commodity costs restrain it. Valuation statistics were unavailable.",
       "sources": [
         {
           "title": "P&G Announces Fiscal Year 2027 First Quarter Results",
@@ -87,8 +87,8 @@
         "position_cap_ok": false
       },
       "confidence": "low",
-      "sentiment_score": null,
-      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sentiment_score": 60,
+      "sentiment_reason": "Research conviction 60/100. Rubric: reported operating momentum 20/30; business resilience 18/25; risk and fit with your existing portfolio 13/25; evidence and valuation completeness 9/20. Sales growth and raised guidance help; adjusted EPS -7.5%, legal/patent exposure and missing valuation statistics lower the score.",
       "sources": [
         {
           "title": "Johnson & Johnson reports Q3 2026 results and raises 2026 guidance",
@@ -130,8 +130,8 @@
         "position_cap_ok": false
       },
       "confidence": "low",
-      "sentiment_score": null,
-      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no sentiment feed evidence used.",
+      "sentiment_score": 66,
+      "sentiment_reason": "Research conviction 66/100. Rubric: reported operating momentum 23/30; business resilience 20/25; risk and fit with your existing portfolio 14/25; evidence and valuation completeness 9/20. Net income +6% and 20% ROTCE help; $2.7B credit costs and reserve build temper the score. Valuation statistics were unavailable.",
       "sources": [
         {
           "title": "JPMorgan Chase Q3 2026 earnings release",
@@ -173,8 +173,8 @@
         "position_cap_ok": false
       },
       "confidence": "low",
-      "sentiment_score": null,
-      "sentiment_reason": "Not scored: current-plan Twelve Data statistics and valuation metrics were unavailable; no Stocktwits or other sentiment data used.",
+      "sentiment_score": 68,
+      "sentiment_reason": "Research conviction 68/100. Rubric: reported operating momentum 30/30; business resilience 16/25; risk and fit with your existing portfolio 12/25; evidence and valuation completeness 10/20. Revenue +106% and data-center revenue +117% are strong; volatility, existing MSFT/GOOGL exposure, and missing valuation statistics temper the score.",
       "sources": [
         {
           "title": "NVIDIA Announces Financial Results for Second Quarter Fiscal 2027",
@@ -192,8 +192,9 @@
     "The example screenshot's Stocktwits, Stocklake and conviction-score figures were sample claims marked unverified in the project. They were not reused. Sentiment is not scored here.",
     "Twelve Data statistics require Pro, Ultra, Venture or Enterprise; analyst price targets require Ultra or Enterprise. Valuation multiples, beta and consensus targets were unavailable on the connected plan.",
     "Twelve Data reported VWCE is available starting with Grow or Venture, so current portfolio ETF pricing was unavailable.",
-    "Quotes are informational observations from 2026-10-29 and can change. Confirm currency, broker access and fees before any future order."
+    "Quotes are informational observations from 2026-10-29 and can change. Confirm currency, broker access and fees before any future order.",
+    "Conviction scores are transparent, qualitative research judgments using reported results, business/risk fit and evidence completeness. They are not probabilities of profit, analyst targets or buy instructions."
   ],
   "research_prompt": "User asked for the best stocks to invest $300 in this month using Twelve Data and Firecrawl. User's answers: holding period 1–2 years; risk preference roughly 80% steadier and 20% riskier with high profitability chance. User then asked for the This Month dashboard to match the screenshot's stock-card style. Use that style with sourced claims, never copy the screenshot's unverified sample data. Respect saved portfolio framework and existing holdings.",
-  "research_summary": "Card-style watchlist research only. PG: official Q1 FY2027 release (2026-10-22) reported net sales +4%, diluted EPS +1%, maintained FY27 organic-sales growth guidance 1–3%; commodity cost headwinds. JNJ: official Q3 2026 release (2026-10-13) reported sales +5.9%, adjusted EPS -7.5%, raised full-year guidance; legal/patent/regulatory risks. JPM: Q3 2026 net income $15.3B (+6%), ROTCE 20%, $2.7B credit costs including $539M net reserve build. NVDA: Q2 FY2027 release (2026-08-26) reported revenue +106% and data-center revenue +117%; high volatility and overlap with existing MSFT/GOOGL exposure. Source links are attached to each card."
+  "research_summary": "Card-style watchlist research only. PG: official Q1 FY2027 release (2026-10-22) reported net sales +4%, diluted EPS +1%, maintained FY27 organic-sales growth guidance 1–3%; commodity cost headwinds. JNJ: official Q3 2026 release (2026-10-13) reported sales +5.9%, adjusted EPS -7.5%, raised full-year guidance; legal/patent/regulatory risks. JPM: Q3 2026 net income $15.3B (+6%), ROTCE 20%, $2.7B credit costs including $539M net reserve build. NVDA: Q2 FY2027 release (2026-08-26) reported revenue +106% and data-center revenue +117%; high volatility and overlap with existing MSFT/GOOGL exposure. Source links are attached to each card. Conviction rubric (100 points): reported operating momentum /30, business resilience /25, risk and fit with current portfolio /25, and evidence/valuation completeness /20. Scores: PG 64, JNJ 60, JPM 66, NVDA 68. Twelve Data prices are dated 2026-10-29; company disclosures were read from official releases via Firecrawl. Twelve Data's connected plan did not provide statistics or analyst targets, so scores are capped by incomplete valuation evidence. These are comparative research judgments, not probabilities of profit, price targets, or buy recommendations."
 }
