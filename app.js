@@ -664,12 +664,12 @@ if (typeof document !== 'undefined') start().catch(e => { $('#content').innerHTM
 if (typeof module !== 'undefined') module.exports = { validate, entrySchema, performance, validateHoldings, validatePrices, validateConfig, currentMonth, monthPurchases, accountSummary, researchExtras, sentiment, positionHistory, mergePurchases, purchaseFromFields, loadLocalPurchases, quickPurchaseFields, validatePreview, applyOverrides, validateQuotes, quoteFor, quotedAccount, accountPnlData, state };
 
 
-// Stocktwits snapshots are separate from historical closes and purchase fills.
+// Current market quote snapshots are separate from historical closes and purchase fills.
 const OVERRIDE_KEY = 'invest-dashboard.overrides.v1';
 function validateQuotes(value) {
   if (!object(value) || !object(value.quotes)) throw new Error('Invalid quote snapshot.');
   for (const [ticker,q] of Object.entries(value.quotes)) {
-    if (!object(q) || !positive(q.price) || q.currency !== 'USD' || q.source !== 'Stocktwits' || !Number.isFinite(Date.parse(q.price_time)) || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(q.price_time)) throw new Error(`Invalid USD quote for ${ticker}.`);
+    if (!object(q) || !positive(q.price) || q.currency !== 'USD' || !['Stocktwits','Twelve Data'].includes(q.source) || !Number.isFinite(Date.parse(q.price_time)) || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(q.price_time)) throw new Error(`Invalid USD quote for ${ticker}.`);
   }
   return value;
 }
@@ -682,14 +682,14 @@ function quoteFor(ticker, lots = []) {
 }
 function quoteLabel(q) {
   const age = Date.now()-Date.parse(q.price_time);
-  return `${age > 7200000 ? 'Older quote · ' : ''}Stocktwits · ${esc(new Date(q.price_time).toLocaleString())}`;
+  return `${age > 7200000 ? 'Older quote · ' : ''}${esc(q.source)} · ${esc(new Date(q.price_time).toLocaleString())}`;
 }
 function quotedAccount(holdings, prices, cash = 0) {
   const base = accountSummary(holdings, prices, cash);
   if (!holdings.length || !holdings.every(h => quoteFor(h.ticker, [h]))) return base;
   const values = holdings.map(h => h.shares * quoteFor(h.ticker,[h]).price);
   const value = values.reduce((a,b)=>a+b,0);
-  return {...base, values, investmentsValue:value, balance:value+cash, gain:value-base.invested, valuedAt:'Stocktwits snapshots (individual timestamps below)'};
+  return {...base, values, investmentsValue:value, balance:value+cash, gain:value-base.invested, valuedAt:'Current quotes (individual timestamps below)'};
 }
 function lotKeys(rows) {
   const counts = new Map();
@@ -716,7 +716,7 @@ function saveOverrides(next) {
 }
 function quoteStatus() {
   const missing = [...new Set(state.holdings.map(h=>h.ticker))].filter(t=>!quoteFor(t,state.holdings.filter(h=>h.ticker===t)));
-  return panel('Market prices', `<p class="meta">Stocktwits snapshots refresh hourly through ChatGPT. Quotes may be delayed; each price shows its provider timestamp. Historical charts use separately saved closing prices.</p>${missing.length ? `<p class="flag">No usable Stocktwits USD quote: ${text(missing.join(', '))}. A complete current account value is unavailable; totals use dated closes or recorded cost as labelled.</p>` : ''}${state.errors.quotes ? '<p class="flag">Price feed unavailable. Previous historical records remain available.</p>' : ''}<button class="action-button" id="refresh-quotes">Reload latest snapshot</button><p id="quotes-message" role="status">${text(state.quoteMessage||'')}</p>`);
+  return panel('Market prices', `<p class="meta">Twelve Data snapshots refresh hourly through GitHub Actions. Quotes may be delayed depending on your plan; each price shows its provider timestamp. Historical charts use separately saved closing prices. Quotes may be delayed; each price shows its provider timestamp. Historical charts use separately saved closing prices.</p>${missing.length ? `<p class="flag">No usable Twelve Data USD quote: ${text(missing.join(', '))}. A complete current account value is unavailable; totals use dated closes or recorded cost as labelled.</p>` : ''}${state.errors.quotes ? '<p class="flag">Price feed unavailable. Previous historical records remain available.</p>' : ''}<button class="action-button" id="refresh-quotes">Reload latest snapshot</button><p id="quotes-message" role="status">${text(state.quoteMessage||'')}</p>`);
 }
 function positionEditor(ticker) {
   const keys=lotKeys(baseLots());
