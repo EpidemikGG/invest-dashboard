@@ -1,29 +1,29 @@
 {
-  "fetched_at": "2026-10-29T21:49:15Z",
+  "fetched_at": "2026-10-29T22:18:47.821Z",
   "quotes": {
     "MSFT": {
-      "price": 530.42999,
-      "price_time": "2026-10-29T19:59:00Z",
+      "price": 529.07,
+      "price_time": "2026-10-29T18:16:09-04:00",
       "currency": "USD",
-      "source": "Twelve Data",
+      "source": "Stocktwits",
       "exchange": "NASDAQ"
     },
     "BRK.B": {
-      "price": 541.88,
-      "price_time": "2026-10-29T19:59:00Z",
+      "price": 544.77,
+      "price_time": "2026-10-29T18:02:06-04:00",
       "currency": "USD",
-      "source": "Twelve Data",
+      "source": "Stocktwits",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 283.75,
-      "price_time": "2026-10-29T19:59:00Z",
+      "price": 281.37,
+      "price_time": "2026-10-29T18:18:29-04:00",
       "currency": "USD",
-      "source": "Twelve Data",
+      "source": "Stocktwits",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "VWCE": "Twelve Data HTTP 404: This symbol is available starting with the Grow or Venture plan. Consider upgrading now at https://twelvedata.com/pricing"
+    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
   }
 }
