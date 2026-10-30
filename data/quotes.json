@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-10-29T23:18:32.653Z",
+  "fetched_at": "2026-10-30T00:14:35.041Z",
   "quotes": {
     "MSFT": {
-      "price": 527.08,
-      "price_time": "2026-10-29T19:17:35-04:00",
+      "price": 529.1,
+      "price_time": "2026-10-29T20:09:38-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
@@ -16,14 +16,15 @@
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 280.2,
-      "price_time": "2026-10-29T19:16:05-04:00",
+      "price": 281.92,
+      "price_time": "2026-10-29T20:14:18-04:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required."
+    "VWCE": "Stocktwits does not support this symbol. Exact listing and USD conversion required.",
+    "BRK.B": "Stocktwits quote predates the saved quote; preserving last known quote and timestamp."
   }
 }
