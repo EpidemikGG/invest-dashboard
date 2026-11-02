@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-11-02T04:09:53.468Z",
+  "fetched_at": "2026-11-02T05:18:31.954Z",
   "quotes": {
     "MSFT": {
-      "price": 522.5,
-      "price_time": "2026-11-01T23:08:24-05:00",
+      "price": 522.77,
+      "price_time": "2026-11-02T00:05:59-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
@@ -16,8 +16,8 @@
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 284.41,
-      "price_time": "2026-11-01T23:09:40-05:00",
+      "price": 283.89,
+      "price_time": "2026-11-02T00:18:16-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
