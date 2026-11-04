@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-04T08:18:36.241Z",
+  "fetched_at": "2026-11-04T09:11:53.972Z",
   "quotes": {
     "MSFT": {
       "price": 519.32,
@@ -24,6 +24,9 @@
     }
   },
   "errors": {
-    "VWCE": "Stocktwits does not support this symbol."
+    "VWCE": "Stocktwits does not support this symbol.",
+    "MSFT": "Stocktwits returned an older quote; the saved price and timestamp were retained.",
+    "BRK.B": "Stocktwits returned an older quote; the saved price and timestamp were retained.",
+    "GOOGL": "Stocktwits returned an older quote; the saved price and timestamp were retained."
   }
 }
