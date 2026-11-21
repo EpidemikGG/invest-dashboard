@@ -1,31 +1,29 @@
 {
-  "fetched_at": "2026-11-21T01:10:16.096Z",
+  "fetched_at": "2026-11-21T01:31:59Z",
   "quotes": {
-    "BRK.B": {
-      "price": 570.045,
-      "price_time": "2026-11-20T19:04:09-05:00",
+    "MSFT": {
+      "price": 485.01001,
+      "price_time": "2026-11-20T20:59:00Z",
       "currency": "USD",
-      "source": "Stocktwits",
+      "source": "Twelve Data",
+      "exchange": "NASDAQ"
+    },
+    "BRK.B": {
+      "price": 570.28998,
+      "price_time": "2026-11-20T20:59:00Z",
+      "currency": "USD",
+      "source": "Twelve Data",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 269.9,
-      "price_time": "2026-11-20T19:57:37-05:00",
+      "price": 265.6767,
+      "price_time": "2026-11-20T20:59:00Z",
       "currency": "USD",
-      "source": "Stocktwits",
-      "exchange": "NASDAQ"
-    },
-    "MSFT": {
-      "price": 489.45,
-      "price_time": "2026-11-20T19:14:25-05:00",
-      "currency": "USD",
-      "source": "Stocktwits",
+      "source": "Twelve Data",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "BRK.B": "Stocktwits returned an older quote (2026-11-20T16:00:00-05:00) than the saved quote (2026-11-20T19:04:09-05:00); retained the saved quote.",
-    "MSFT": "Stocktwits returned an older quote (2026-11-20T16:00:00-05:00) than the saved quote (2026-11-20T19:14:25-05:00); retained the saved quote.",
-    "VWCE": "Stocktwits does not support this symbol."
+    "VWCE": "Twelve Data HTTP 404: This symbol is available starting with the Grow or Venture plan. Consider upgrading now at https://twelvedata.com/pricing"
   }
 }
