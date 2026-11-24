@@ -1,30 +1,29 @@
 {
-  "fetched_at": "2026-11-24T03:14:43.874Z",
+  "fetched_at": "2026-11-24T04:14:31.883Z",
   "quotes": {
     "BRK.B": {
-      "price": 573.73,
-      "price_time": "2026-11-23T18:58:22-05:00",
+      "price": 574,
+      "price_time": "2026-11-23T22:38:41-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 283,
-      "price_time": "2026-11-23T22:13:39-05:00",
+      "price": 284.84,
+      "price_time": "2026-11-23T23:11:02-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     },
     "MSFT": {
-      "price": 492.5,
-      "price_time": "2026-11-23T22:09:33-05:00",
+      "price": 494.73,
+      "price_time": "2026-11-23T22:56:49-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "BRK.B": "Stocktwits returned an older quote (2026-11-23T16:00:00-05:00) than the saved quote (2026-11-23T18:58:22-05:00); retained the saved quote.",
     "VWCE": "Stocktwits does not support this symbol."
   }
 }
