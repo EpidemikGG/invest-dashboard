@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-24T01:14:46.294Z",
+  "fetched_at": "2026-11-24T02:14:45.011Z",
   "quotes": {
     "BRK.B": {
       "price": 573.73,
@@ -9,23 +9,22 @@
       "exchange": "NYSE"
     },
     "GOOGL": {
-      "price": 283.58,
-      "price_time": "2026-11-23T19:13:31-05:00",
+      "price": 284.25,
+      "price_time": "2026-11-23T21:09:04-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     },
     "MSFT": {
-      "price": 494.2,
-      "price_time": "2026-11-23T20:13:29-05:00",
+      "price": 492.87,
+      "price_time": "2026-11-23T21:06:34-05:00",
       "currency": "USD",
       "source": "Stocktwits",
       "exchange": "NASDAQ"
     }
   },
   "errors": {
-    "BRK.B": "Stocktwits lookup failed; retained the last known quote and its original timestamp.",
-    "GOOGL": "Stocktwits lookup failed; retained the last known quote and its original timestamp.",
-    "VWCE": "Unsupported or ambiguous listing; no verified US USD quote. Stocktwits lookup failed during this retrieval; retained any last known quote and its original timestamp."
+    "BRK.B": "Stocktwits returned an older quote (2026-11-23T16:00:00-05:00) than the saved quote (2026-11-23T18:58:22-05:00); retained the saved quote.",
+    "VWCE": "Stocktwits does not support this symbol."
   }
 }
