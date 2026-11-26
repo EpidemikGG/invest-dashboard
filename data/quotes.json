@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-11-26T00:11:23.615Z",
+  "fetched_at": "2026-11-26T01:14:30.278Z",
   "quotes": {
     "BRK.B": {
       "price": 580.27,
@@ -24,6 +24,9 @@
     }
   },
   "errors": {
+    "BRK.B": "Stocktwits returned an older quote (2026-11-25T16:00:00-05:00) than the saved quote (2026-11-25T18:52:34-05:00); retained the saved quote.",
+    "GOOGL": "Stocktwits returned an older quote (2026-11-25T16:00:00-05:00) than the saved quote (2026-11-25T19:06:00-05:00); retained the saved quote.",
+    "MSFT": "Stocktwits returned an older quote (2026-11-25T16:00:00-05:00) than the saved quote (2026-11-25T19:07:58-05:00); retained the saved quote.",
     "VWCE": "Stocktwits does not support this symbol."
   }
 }
